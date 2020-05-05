@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru" style="overflow-y: auto;">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Пеликан</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+
+<body>
+<div id="app">
+    <v-app>
+        <v-content>
+
+            <!-- Header Start -->
+            <v-row id="header" class="grey lighten-4">
+
+                <!-- Status Buttons Start -->
+                <v-col cols="7" sm="3">
+                    <button @click="roomStartResume">
+                        <v-icon color="green darken-2" v-if="isShowStartButton">mdi-play</v-icon>
+                    </button>
+                    <button @click="roomPause">
+                        <v-icon color="yellow darken-2" v-if="isShowPauseButton">mdi-pause-circle-outline</v-icon>
+                    </button>
+                    <button @click="roomStop">
+                        <v-icon color="red darken-2" v-if="isShowStopButton">mdi-stop-circle-outline</v-icon>
+                    </button>
+                    <v-icon small>mdi-arrow-down</v-icon>{{ timeToEndString }}
+                </v-col>
+                <!-- Status Buttons End -->
+
+                <v-col cols="12" sm="6" class="text-center d-none d-sm-flex">
+                    {{ room.title }}
+                </v-col>
+
+                <!-- Settings Buttons Start -->
+                <v-col cols="3" sm="2" class="text-center">
+                    <button>
+                        <v-icon color="blue">mdi-television-play</v-icon>
+                    </button>
+                    <button>
+                        <v-icon color="blue">mdi-presentation</v-icon>
+                    </button>
+                    <button @click="chatHideShow" :class="{'teal lighten-4': chat.isVisible}">
+                        <v-icon color="blue">mdi-forum-outline</v-icon>
+                    </button>
+                    <button @click="visitorsHideShow" :class="{'teal lighten-4': visitors.isVisible}">
+                        <v-icon color="blue">mdi-account-supervisor</v-icon>
+                    </button>
+                    <button>
+                        <v-icon color="blue">mdi-file-send-outline</v-icon>
+                    </button>
+                    <button>
+                        <v-icon color="blue">mdi-cogs</v-icon>
+                    </button>
+                </v-col>
+                <!-- Settings Buttons End -->
+
+                <v-col cols="2" sm="1" class="text-right">
+                    <button>
+                        <v-icon color="green darken-2">mdi-exit-to-app</v-icon>
+                    </button>
+                </v-col>
+            </v-row>
+            <!-- Header End -->
+
+            <v-row>
+                <!-- Video Start -->
+                <v-col
+                        v-show="video.isVisible"
+                        class="blue lighten-5"
+                        :style="{ height: mainElementHeight }"
+                >
+                    VIDEO
+                </v-col>
+                <!-- Video End -->
+
+                <!-- Chat Start -->
+                <v-col
+                        v-show="chat.isVisible"
+                        class="pink lighten-5"
+                        :style="chatStyle"
+                >
+                    CHAT
+                </v-col>
+                <!-- Chat End -->
+
+                <!-- Visitors Start -->
+                <v-col
+                        v-show="visitors.isVisible"
+                        class="lime lighten-5"
+                        :style="visitorsStyle"
+                >
+                    VISITORS
+                </v-col>
+                <!-- Visitors End -->
+
+            </v-row>
+
+            <!-- Footer Start -->
+            <v-footer id="footer" absolute padless>
+                <v-col>
+                    &copy; 2015-{{ new Date().getFullYear() }} WizardSoft
+                </v-col>
+                <v-col cols="2" class="text-right">
+                    v3.4
+                </v-col>
+                <div></div>
+            </v-footer>
+            <!-- Footer End -->
+
+        </v-content>
+    </v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="static/js/moment.min.js"></script>
+<script src="static/js/app.js"></script>
+
+<script>
+    new Vue(VueApp);
+</script>
+</body>
+</html>
