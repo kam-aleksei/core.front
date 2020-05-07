@@ -3,7 +3,6 @@
 
 let VueApp = {
     el: '#app',
-    vuetify: new Vuetify(),
 
     mounted: function () {
 
@@ -14,42 +13,56 @@ let VueApp = {
             }
         }, 1000);
 
-        // Для мобильного по умолчанию отключаем чат
-        if (this.$vuetify.breakpoint.xs) {
+        // Устанавливаем размер основных элементов
+        // Пересчитываем размер основных элементов при изменении размера окна
+        this.calcWidthHeight();
+        window.addEventListener('resize', this.calcWidthHeight, { passive: true });
+
+        // Для мобильного по умолчанию отключаем чат и видео
+        if (this.windowWidth <= this.breakpoint.thresholds.m) {
             this.chat.isVisible = false;
         }
-
-        // Устанавливаем высоту основных элементов
-        this.calcMainElementHeight();
-
-        // Пересчитываем высоту при изменении размера окна
-        window.addEventListener('resize', this.calcMainElementHeight, { passive: true });
+        if (this.breakpoint.s) {
+            this.video.isVisible = false;
+        }
     },
 
     data: {
+        user: {
+            name: 'Иванов Иван Иванович',
+            isLeading: true
+        },
+
         room: {
-            title: 'Название мероприятия, которое прохдит в данный момент',
+            title: 'Название мероприятия, которое проходит в данный момент',
 
             isStarted: false,
             isPaused: false,
             isStopped: false,
+
+            mainElement: 'presentation'
         },
 
         video: {
-            isVisible: true
+            isVisible: true,
+        },
+
+        presentation: {
+            isVisible: true,
         },
 
         chat: {
-            isVisible: true
+            isVisible: true,
         },
 
         visitors: {
-            isVisible: false
+            isVisible: false,
         },
 
         secondsToEnd: 0,
 
-        mainElementHeight: 0
+        windowWidth: 0,
+        windowHeight: 0
     },
 
     computed: {
@@ -67,47 +80,56 @@ let VueApp = {
             return moment('2000-01-01').seconds(this.secondsToEnd).format('HH:mm:ss');
         },
 
-
-        // Стили чата и писка посетителей
-        chatStyle: function () {
-            let style = {
-                'height': this.mainElementHeight
-            };
-
-            // Для разрешения больше мобильного - фиксированная ширина
-            if (!this.$vuetify.breakpoint.xs) {
-                style['max-width'] = '350px';
-            }
-
-            // У видео приоритет на мобильнике
-            if (this.$vuetify.breakpoint.xs && this.video.isVisible) {
-                this.chat.isVisible = false;
-            }
-
-            return style;
+        isVideoMain: function () {
+            return this.room.mainElement === 'video';
+        },
+        isPresentationMain: function () {
+            return this.room.mainElement === 'presentation';
         },
 
-        visitorsStyle: function () {
-            let style = {
-                'height': this.mainElementHeight
+        // Смещение относительно края экрана для видео и презентации
+        styleSmallRight: function () {
+            const delta = 350;
+            return 10 + (this.chat.isVisible ? delta: 0) + (this.visitors.isVisible ? delta: 0);
+        },
+
+
+        // Работа с сеткой
+        breakpoint: function () {
+            const s = 600, m = 992, l = 1200;
+
+            return {
+                thresholds: {
+                    s: s,
+                    m: m,
+                    l: l,
+                },
+                s: this.windowWidth <= s,
+                m: s < this.windowWidth <= m,
+                l: m < this.windowWidth <= l,
+                xl: this.windowWidth > l
             };
+        }
+    },
 
-            // Для разрешения больше мобильного - фиксированная ширина
-            if (!this.$vuetify.breakpoint.xs) {
-                style['max-width'] = '350px';
-            }
-
+    watch: {
+        windowWidth: function (val) {
             // У чата приоритет над списком пользователей на маленьких разрешениях
-            if (this.$vuetify.breakpoint.width < 1264 && this.chat.isVisible) {
+            if (val < this.breakpoint.thresholds.l && this.chat.isVisible) {
                 this.visitors.isVisible = false;
             }
 
-            // У видео приоритет на мобильнике
-            if (this.$vuetify.breakpoint.xs && this.video.isVisible) {
+            // На маленьком разрешении отключем чат и посетителей
+            if (val < this.breakpoint.thresholds.m) {
+                this.chat.isVisible = false;
                 this.visitors.isVisible = false;
             }
 
-            return style;
+            // На маленьком разрешении отключем презентацию или видео
+            if (val < this.breakpoint.thresholds.s) {
+                this.video.isVisible = this.isVideoMain;
+                this.presentation.isVisible = this.isPresentationMain;
+            }
         }
     },
 
@@ -127,6 +149,7 @@ let VueApp = {
         },
         roomStop: function () {
             this.room.isStopped = true;
+            this.secondsToEnd = 0;
         },
 
 
@@ -134,13 +157,18 @@ let VueApp = {
         chatHideShow: function () {
             this.chat.isVisible = !this.chat.isVisible;
 
-            // На маленьком рзрешении, если включается чат, выключаем список посетителей
-            if (this.$vuetify.breakpoint.width < 1264 && this.chat.isVisible) {
-                this.visitors.isVisible = false;
+            // При включении чата
+            if (this.chat.isVisible) {
+                // На маленьком рзрешении, если включается чат, выключаем список посетителей
+                if (this.windowWidth < this.breakpoint.thresholds.l) {
+                    this.visitors.isVisible = false;
+                }
+                // Для мобильника отключаем видео и презентацию
+                if (this.breakpoint.s) {
+                    this.video.isVisible = false;
+                    this.presentation.isVisible = false;
+                }
             }
-
-            // Для мобильника, если включают чат, скрываем видео
-            this.video.isVisible = !(this.$vuetify.breakpoint.xs && this.chat.isVisible);
         },
 
 
@@ -148,32 +176,77 @@ let VueApp = {
         visitorsHideShow: function () {
             this.visitors.isVisible = !this.visitors.isVisible;
 
-            // На маленьком рзрешении, если включается список посетителей, выключаем чат
-            if (this.$vuetify.breakpoint.width < 1264 && this.visitors.isVisible) {
-                this.chat.isVisible = false;
+            // При включении посетителей
+            if (this.visitors.isVisible) {
+                // На маленьком рзрешении, если включается чат, выключаем список посетителей
+                if (this.windowWidth < this.breakpoint.thresholds.l) {
+                    this.chat.isVisible = false;
+                }
+                // Для мобильника отключаем видео и презентацию
+                if (this.breakpoint.s) {
+                    this.video.isVisible = false;
+                    this.presentation.isVisible = false;
+                }
             }
-
-            // Для мобильника, если включают список посетителей, скрываем видео
-            this.video.isVisible = !(this.$vuetify.breakpoint.xs && this.visitors.isVisible);
         },
 
 
-        // Расчет высоты основных элементов
-        calcMainElementHeight: function () {
-            this.mainElementHeight = windowSize()[1] -
-                document.getElementById('header').offsetHeight -
-                document.getElementById('footer').offsetHeight + 'px';
-        }
+        // Методы управления видео
+        videoHideShow: function () {
+            this.video.isVisible = !this.video.isVisible;
+
+            // При выключении видео делаем главной презентацию
+            if (!this.video.isVisible) {
+                this.presentation.isVisible = true;
+                this.setPresentationMain();
+            }
+
+            // Для мобильника отключаем все кроме видео
+            if (this.video.isVisible && this.breakpoint.s) {
+                this.setVideoMain();
+
+                this.presentation.isVisible = false;
+                this.chat.isVisible = false;
+                this.visitors.isVisible = false;
+            }
+        },
+        setVideoMain: function () {
+            this.room.mainElement = 'video';
+        },
+
+        // Методы управления презентацией
+        presentationHideShow: function () {
+            this.presentation.isVisible = !this.presentation.isVisible;
+
+            // При выключении презентации делаем главной видео
+            if (!this.presentation.isVisible) {
+                this.video.isVisible = true;
+                this.setVideoMain();
+            }
+
+            // Для мобильника отключаем все кроме презентации
+            if (this.presentation.isVisible && this.breakpoint.s) {
+                this.setPresentationMain();
+
+                this.video.isVisible = false;
+                this.chat.isVisible = false;
+                this.visitors.isVisible = false;
+            }
+        },
+        setPresentationMain: function () {
+            this.room.mainElement = 'presentation';
+        },
+
+        // Вычисляем размер окна
+        calcWidthHeight: function () {
+            let w = window,
+                d = document,
+                e = d.documentElement,
+                g = d.getElementsByTagName('body')[0];
+
+            this.windowWidth = w.innerWidth || e.clientWidth || g.clientWidth;
+            this.windowHeight = w.innerHeight || e.clientHeight || g.clientHeight;
+        },
     }
 };
 
-
-function windowSize() {
-    let w = window,
-        d = document,
-        e = d.documentElement,
-        g = d.getElementsByTagName('body')[0],
-        x = w.innerWidth || e.clientWidth || g.clientWidth,
-        y = w.innerHeight || e.clientHeight || g.clientHeight;
-    return [x, y];
-}

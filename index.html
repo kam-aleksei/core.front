@@ -1,125 +1,97 @@
 <!DOCTYPE html>
-<html lang="ru" style="overflow-y: auto;">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
     <title>Пеликан</title>
 
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="static/css/style.css">
 </head>
 
 <body>
 <div id="app">
-    <v-app>
-        <v-content>
 
-            <!-- Header Start -->
-            <v-row id="header" class="grey lighten-4">
+    <!-- Header Start -->
+    <div id="header" class="row grey lighten-3 m-b-0 valign-wrapper">
+        <!-- Status Buttons Start -->
+        <div class="col s4 m2 l2 valign-wrapper">
+            <i v-if="isShowStartButton" @click="roomStartResume" class="material-icons">play_circle_outline</i>
+            <i v-if="isShowPauseButton" @click="roomPause" class="material-icons">pause_circle_outline</i>
+            <i v-if="isShowStopButton" @click="roomStop" class="material-icons">stop</i>
+            <i class="material-icons tiny">arrow_downward</i> {{ timeToEndString }}
+        </div>
+        <!-- Status Buttons End -->
 
-                <!-- Status Buttons Start -->
-                <v-col cols="7" sm="3">
-                    <button @click="roomStartResume">
-                        <v-icon color="green darken-2" v-if="isShowStartButton">mdi-play</v-icon>
-                    </button>
-                    <button @click="roomPause">
-                        <v-icon color="yellow darken-2" v-if="isShowPauseButton">mdi-pause-circle-outline</v-icon>
-                    </button>
-                    <button @click="roomStop">
-                        <v-icon color="red darken-2" v-if="isShowStopButton">mdi-stop-circle-outline</v-icon>
-                    </button>
-                    <v-icon small>mdi-arrow-down</v-icon>{{ timeToEndString }}
-                </v-col>
-                <!-- Status Buttons End -->
+        <div class="col m5 l7 hide-on-small-only truncate">
+            {{ room.title }}
+        </div>
 
-                <v-col cols="12" sm="6" class="text-center d-none d-sm-flex">
-                    {{ room.title }}
-                </v-col>
+        <div class="col s8 m5 l3">
+            <!-- Settings Buttons Start -->
+            <span>
+                <i @click="videoHideShow" :class="{'teal-text': video.isVisible}" class="material-icons">ondemand_video</i>
+                <i @click="presentationHideShow" :class="{'teal-text': presentation.isVisible}" class="material-icons">settings_system_daydream</i>
+                <i @click="chatHideShow" :class="{'teal-text': chat.isVisible}" class="material-icons">chat</i>
+                <i @click="visitorsHideShow" :class="{'teal-text': visitors.isVisible}" class="material-icons">people_outline</i>
+                <i class="material-icons">folder_open</i>
+                <i class="material-icons">settings</i>
+            </span>
+            <!-- Settings Buttons End -->
 
-                <!-- Settings Buttons Start -->
-                <v-col cols="3" sm="2" class="text-center">
-                    <button>
-                        <v-icon color="blue">mdi-television-play</v-icon>
-                    </button>
-                    <button>
-                        <v-icon color="blue">mdi-presentation</v-icon>
-                    </button>
-                    <button @click="chatHideShow" :class="{'teal lighten-4': chat.isVisible}">
-                        <v-icon color="blue">mdi-forum-outline</v-icon>
-                    </button>
-                    <button @click="visitorsHideShow" :class="{'teal lighten-4': visitors.isVisible}">
-                        <v-icon color="blue">mdi-account-supervisor</v-icon>
-                    </button>
-                    <button>
-                        <v-icon color="blue">mdi-file-send-outline</v-icon>
-                    </button>
-                    <button>
-                        <v-icon color="blue">mdi-cogs</v-icon>
-                    </button>
-                </v-col>
-                <!-- Settings Buttons End -->
+            <i class="material-icons right">exit_to_app</i>
+        </div>
+    </div>
+    <!-- Header End -->
 
-                <v-col cols="2" sm="1" class="text-right">
-                    <button>
-                        <v-icon color="green darken-2">mdi-exit-to-app</v-icon>
-                    </button>
-                </v-col>
-            </v-row>
-            <!-- Header End -->
+    <div style="display: flex; position: relative">
+        <!-- Video Start -->
+        <div v-show="video.isVisible"
+             :class="[{'video-big full-width': isVideoMain || breakpoint.s, 'video-small': !isVideoMain && !breakpoint.s}]"
+             :style="{ right : styleSmallRight + 'px' }"
+             class="blue lighten-5">
+            <span v-if="!room.isStarted">VIDEO - ROOM NOT STARTED</span>
+            <span v-if="room.isStarted && !room.isPaused">VIDEO - ROOM STARTED</span>
+            <span v-if="room.isStarted && room.isPaused">VIDEO - ROOM PAUSED</span>
 
-            <v-row>
-                <!-- Video Start -->
-                <v-col
-                        v-show="video.isVisible"
-                        class="blue lighten-5"
-                        :style="{ height: mainElementHeight }"
-                >
-                    VIDEO
-                </v-col>
-                <!-- Video End -->
+            <i v-if="!isVideoMain" @click="setVideoMain" class="material-icons set-main">aspect_ratio</i>
+        </div>
+        <!-- Video End -->
 
-                <!-- Chat Start -->
-                <v-col
-                        v-show="chat.isVisible"
-                        class="pink lighten-5"
-                        :style="chatStyle"
-                >
-                    CHAT
-                </v-col>
-                <!-- Chat End -->
+        <!-- Presentation Start -->
+        <div v-show="presentation.isVisible"
+             :class="[{'presentation-big full-width': isPresentationMain || breakpoint.s, 'presentation-small': !isPresentationMain && !breakpoint.s}]"
+             :style="{ right : styleSmallRight + 'px' }"
+             class="purple lighten-5">
+            PRESENTATION
 
-                <!-- Visitors Start -->
-                <v-col
-                        v-show="visitors.isVisible"
-                        class="lime lighten-5"
-                        :style="visitorsStyle"
-                >
-                    VISITORS
-                </v-col>
-                <!-- Visitors End -->
+            <i v-if="!isPresentationMain" @click="setPresentationMain" class="material-icons set-main">aspect_ratio</i>
+        </div>
+        <!-- Presentation End -->
 
-            </v-row>
+        <!-- Chat Start -->
+        <div v-show="chat.isVisible" class="green lighten-5 chat" :class="{'full-width': breakpoint.s}">
+            CHAT
+        </div>
+        <!-- Chat End -->
 
-            <!-- Footer Start -->
-            <v-footer id="footer" absolute padless>
-                <v-col>
-                    &copy; 2015-{{ new Date().getFullYear() }} WizardSoft
-                </v-col>
-                <v-col cols="2" class="text-right">
-                    v3.4
-                </v-col>
-                <div></div>
-            </v-footer>
-            <!-- Footer End -->
+        <!-- Visitors Start -->
+        <div v-show="visitors.isVisible" class="lime lighten-5 visitors" :class="{'full-width': breakpoint.s}">
+            VISITORS
+        </div>
+        <!-- Visitors End -->
+    </div>
 
-        </v-content>
-    </v-app>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<!-- версия для разработки, отображает полезные предупреждения в консоли -->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<!-- production-версия, оптимизированная для размера и скорости -->
+<!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
 <script src="static/js/moment.min.js"></script>
 <script src="static/js/app.js"></script>
 

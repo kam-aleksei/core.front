@@ -1,0 +1,21 @@
+$header-height: 40px;
+
+@import "header";
+@import "chat";
+@import "visitors";
+@import "video";
+@import "presentation";
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.full-width {
+  width: 100% !important;
+}
+
+.m-b-0 {
+  margin-bottom: 0 !important;
+}
