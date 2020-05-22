@@ -13,13 +13,42 @@
 <body>
 <div id="app">
 
+    <!--  !!! Удалить  -->
+    <div id="temp-modal" class="modal">
+        <div class="modal-content center-align">
+            <h4>Это временная модалка</h4>
+
+            <div class="switch m-b-10">
+                <label>
+                    Участник
+                    <input type="checkbox" v-model="user.isLeading">
+                    <span class="lever"></span>
+                    Ведущий
+                </label>
+            </div>
+
+            <div class="switch">
+                <label>
+                    Web-камера
+                    <input type="checkbox" v-model="room.isIPCams">
+                    <span class="lever"></span>
+                    IP-камеры
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat">Закрыть</a>
+        </div>
+    </div>
+    <!--  !!! Удалить  -->
+
     <!-- Header Start -->
     <div id="header" class="row grey lighten-3 m-b-0 valign-wrapper">
         <!-- Status Buttons Start -->
         <div class="col s4 m2 l2 valign-wrapper">
-            <i v-if="isShowStartButton" @click="roomStartResume" class="material-icons">play_circle_outline</i>
-            <i v-if="isShowPauseButton" @click="roomPause" class="material-icons">pause_circle_outline</i>
-            <i v-if="isShowStopButton" @click="roomStop" class="material-icons">stop</i>
+            <i v-if="isShowStartButton" @click="roomStartResume" class="material-icons cur">play_circle_outline</i>
+            <i v-if="isShowPauseButton" @click="roomPause" class="material-icons cur">pause_circle_outline</i>
+            <i v-if="isShowStopButton" @click="roomStop" class="material-icons cur">stop</i>
             <i class="material-icons tiny">arrow_downward</i> {{ timeToEndString }}
         </div>
         <!-- Status Buttons End -->
@@ -31,16 +60,16 @@
         <div class="col s8 m5 l3">
             <!-- Settings Buttons Start -->
             <span>
-                <i @click="videoHideShow" :class="{'teal-text': video.isVisible}" class="material-icons">ondemand_video</i>
-                <i @click="presentationHideShow" :class="{'teal-text': presentation.isVisible}" class="material-icons">settings_system_daydream</i>
-                <i @click="chatHideShow" :class="{'teal-text': chat.isVisible}" class="material-icons">chat</i>
-                <i @click="visitorsHideShow" :class="{'teal-text': visitors.isVisible}" class="material-icons">people_outline</i>
-                <i class="material-icons">folder_open</i>
-                <i class="material-icons">settings</i>
+                <i @click="videoHideShow" :class="{'teal-text': video.isVisible}" class="material-icons cur">ondemand_video</i>
+                <i @click="presentationHideShow" :class="{'teal-text': presentation.isVisible}" class="material-icons cur">settings_system_daydream</i>
+                <i @click="chatHideShow" :class="{'teal-text': chat.isVisible}" class="material-icons cur">chat</i>
+                <i @click="visitorsHideShow" :class="{'teal-text': visitors.isVisible}" class="material-icons cur">people_outline</i>
+                <i class="material-icons cur">folder_open</i>
+                <i class="material-icons cur">settings</i>
             </span>
             <!-- Settings Buttons End -->
 
-            <i class="material-icons right">exit_to_app</i>
+            <i class="material-icons right cur">exit_to_app</i>
         </div>
     </div>
     <!-- Header End -->
@@ -55,7 +84,7 @@
             <span v-if="room.isStarted && !room.isPaused">VIDEO - ROOM STARTED</span>
             <span v-if="room.isStarted && room.isPaused">VIDEO - ROOM PAUSED</span>
 
-            <i v-if="!isVideoMain" @click="setVideoMain" class="material-icons set-main">aspect_ratio</i>
+            <i v-if="!isVideoMain" @click="setVideoMain" class="material-icons set-main cur">aspect_ratio</i>
         </div>
         <!-- Video End -->
 
@@ -66,7 +95,7 @@
              class="purple lighten-5">
             PRESENTATION
 
-            <i v-if="!isPresentationMain" @click="setPresentationMain" class="material-icons set-main">aspect_ratio</i>
+            <i v-if="!isPresentationMain" @click="setPresentationMain" class="material-icons set-main cur">aspect_ratio</i>
         </div>
         <!-- Presentation End -->
 

@@ -6,6 +6,13 @@ let VueApp = {
 
     mounted: function () {
 
+        // !!! Удалить ---------------------------------------
+        let elem = document.querySelector('#temp-modal');
+        M.Modal.init(elem);
+        let instance = M.Modal.getInstance(elem);
+        instance.open();
+        // ---------------------------------------------------
+
         // Счетчик времени до окончания мероприятия
         setInterval(() => {
             if (this.secondsToEnd && this.secondsToEnd > 0) {
@@ -39,6 +46,8 @@ let VueApp = {
             isStarted: false,
             isPaused: false,
             isStopped: false,
+
+            isIPCams: true,
 
             mainElement: 'presentation'
         },

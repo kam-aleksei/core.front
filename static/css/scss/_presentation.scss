@@ -1,0 +1,19 @@
+.presentation-big {
+  height: calc(100vh - #{$header-height});
+
+  position: static;
+}
+
+.presentation-small {
+  width: 300px;
+  height: 200px;
+
+  position: absolute;
+  top: 10px;
+
+  .set-main {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+  }
+}

@@ -1,0 +1,5 @@
+.chat {
+  width: 350px;
+  min-width: 350px;
+  height: calc(100vh - #{$header-height});
+}
