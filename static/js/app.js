@@ -81,6 +81,7 @@ let VueApp = {
 
         visitors: {
             isVisible: false,
+            sortByNameAsc: true,
         },
 
         secondsToEnd: 0,
@@ -213,19 +214,37 @@ let VueApp = {
             }
         },
 
-        usersSortByName: function () {
+        // Корректировка списка пользователей
+        // Первые ведущий и участник
+        usersTop: function () {
             this.users = this.users.sort((a, b) => {
-                let a_name = '9' + a.name,
-                    b_name = '9' + b.name;
-
-                a_name = a.leading ? '0' + a_name : a_name;
-                b_name = b.leading ? '0' + b_name : b_name;
-
-                a_name = a.id === this.user.id ? '5' + a_name : a_name;
-                b_name = b.id === this.user.id ? '5' + b_name : b_name;
-
-                return a_name === b_name ? 0 : a_name > b_name ? 1 : -1;
+                let a_prior = a.leading ? 0 : a.id === this.user.id ? 5 : 9,
+                    b_prior = b.leading ? 0 : b.id === this.user.id ? 5 : 9;
+                return a_prior - b_prior;
             });
+        },
+
+        // Сортировка пользователей по алфавиту
+        usersSortByName: function () {
+            let direction = this.visitors.sortByNameAsc ? 1 : -1;
+            this.users = this.users.sort((a, b) => {
+                return (a.name === b.name ? 0 : a.name > b.name ? 1 : -1) * direction;
+            });
+            this.usersTop();
+
+            // Инверсия сортировки для следующего нажатия
+            this.visitors.sortByNameAsc = !this.visitors.sortByNameAsc;
+        },
+
+        // Сортировка пользователей по поднятым рукам
+        usersSortByHand: function () {
+            this.users = this.users.sort((a, b) => {
+                return a.hand === b.hand ? 0 : a.hand > b.hand ? -1 : 1;
+            });
+            this.usersTop();
+
+            // Следующая сортировка по именам должна быть по возрастанию
+            this.visitors.sortByNameAsc = true;
         },
 
 

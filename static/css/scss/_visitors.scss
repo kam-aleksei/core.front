@@ -8,7 +8,25 @@
   overflow-x: hidden;
   overflow-y: scroll;
 
-  .visitors-list {
+  &-header {
+    display: flex;
+    margin-bottom: 5px;
+    position: relative;
+
+    border-bottom: 1px solid;
+
+    div {
+      width: 15px;
+      margin-right: 5px;
+
+      &:last-child {
+        position: absolute;
+        right: 0;
+      }
+    }
+  }
+
+  &-list {
     display: flex;
 
     div {

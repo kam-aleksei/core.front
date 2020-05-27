@@ -109,8 +109,18 @@
 
         <!-- Visitors Start -->
         <div v-show="visitors.isVisible" class="lime lighten-5 visitors" :class="{'full-width': breakpoint.s}">
-            <div>
-                <i class="material-icons tiny">settings</i>
+            <div class="visitors-header">
+                <div>
+                    <i @click="usersSortByHand" class="material-icons tiny cur">arrow_upward</i>
+                </div>
+                <div></div>
+                <div></div>
+                <div>
+                    <i @click="usersSortByName" class="material-icons tiny cur">sort_by_alpha</i>
+                </div>
+                <div>
+                    <i class="material-icons tiny right">settings</i>
+                </div>
             </div>
 
             <div v-for="u in users" class="visitors-list">
