@@ -21,7 +21,7 @@
             <div class="switch m-b-10">
                 <label>
                     Участник
-                    <input type="checkbox" v-model="user.isLeading">
+                    <input type="checkbox" v-model="user.leading">
                     <span class="lever"></span>
                     Ведущий
                 </label>
@@ -46,9 +46,11 @@
     <div id="header" class="row grey lighten-3 m-b-0 valign-wrapper">
         <!-- Status Buttons Start -->
         <div class="col s4 m2 l2 valign-wrapper">
-            <i v-if="isShowStartButton" @click="roomStartResume" class="material-icons cur">play_circle_outline</i>
-            <i v-if="isShowPauseButton" @click="roomPause" class="material-icons cur">pause_circle_outline</i>
-            <i v-if="isShowStopButton" @click="roomStop" class="material-icons cur">stop</i>
+            <span v-if="user.leading">
+                <i v-if="isShowStartButton" @click="roomStartResume" class="material-icons cur">play_circle_outline</i>
+                <i v-if="isShowPauseButton" @click="roomPause" class="material-icons cur">pause_circle_outline</i>
+                <i v-if="isShowStopButton" @click="roomStop" class="material-icons cur">stop</i>
+            </span>
             <i class="material-icons tiny">arrow_downward</i> {{ timeToEndString }}
         </div>
         <!-- Status Buttons End -->
@@ -107,7 +109,27 @@
 
         <!-- Visitors Start -->
         <div v-show="visitors.isVisible" class="lime lighten-5 visitors" :class="{'full-width': breakpoint.s}">
-            VISITORS
+            <div>
+                <i class="material-icons tiny">settings</i>
+            </div>
+
+            <div v-for="u in users" class="visitors-list">
+                <div>
+                    <i v-if="u.leading" class="material-icons tiny">person</i>
+                    <i v-if="u.hand" class="material-icons tiny">pan_tool</i>
+                </div>
+                <div>
+                    <i v-if="u.cam" class="material-icons tiny">videocam</i>
+                    <i v-else class="material-icons tiny grey-text text-lighten-2">videocam</i>
+                </div>
+                <div>
+                    <i v-if="u.mic" class="material-icons tiny">mic</i>
+                    <i v-else class="material-icons tiny grey-text text-lighten-2">mic</i>
+                </div>
+                <div class="truncate">
+                    {{ u.name }}
+                </div>
+            </div>
         </div>
         <!-- Visitors End -->
     </div>

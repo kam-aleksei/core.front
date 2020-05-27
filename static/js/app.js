@@ -1,5 +1,5 @@
 'use strict';
-/* jshint esversion: 6 */
+/* jshint esversion: 8 */
 
 let VueApp = {
     el: '#app',
@@ -10,7 +10,7 @@ let VueApp = {
         let elem = document.querySelector('#temp-modal');
         M.Modal.init(elem);
         let instance = M.Modal.getInstance(elem);
-        instance.open();
+        // instance.open();
         // ---------------------------------------------------
 
         // Счетчик времени до окончания мероприятия
@@ -23,7 +23,7 @@ let VueApp = {
         // Устанавливаем размер основных элементов
         // Пересчитываем размер основных элементов при изменении размера окна
         this.calcWidthHeight();
-        window.addEventListener('resize', this.calcWidthHeight, { passive: true });
+        window.addEventListener('resize', this.calcWidthHeight, {passive: true});
 
         // Для мобильного по умолчанию отключаем чат и видео
         if (this.windowWidth <= this.breakpoint.thresholds.m) {
@@ -32,14 +32,29 @@ let VueApp = {
         if (this.breakpoint.s) {
             this.video.isVisible = false;
         }
+
+        // Загружаем пользователей
+        this.loadData('./data/users.json')
+            .then((res) => {
+                this.users = res;
+                this.usersSortByName();
+            });
+
     },
 
     data: {
+        // Текущий пользователь
         user: {
-            name: 'Иванов Иван Иванович',
-            isLeading: true
+            id: 1,
+            cam: true,
+            mic: true,
+            leading: true,
         },
 
+        // Пользователи в комнате
+        users: [],
+
+        // Комната
         room: {
             title: 'Название мероприятия, которое проходит в данный момент',
 
@@ -99,9 +114,8 @@ let VueApp = {
         // Смещение относительно края экрана для видео и презентации
         styleSmallRight: function () {
             const delta = 350;
-            return 10 + (this.chat.isVisible ? delta: 0) + (this.visitors.isVisible ? delta: 0);
+            return 10 + (this.chat.isVisible ? delta : 0) + (this.visitors.isVisible ? delta : 0);
         },
-
 
         // Работа с сеткой
         breakpoint: function () {
@@ -147,7 +161,7 @@ let VueApp = {
         roomStartResume: function () {
             // Первый запуск инициализируем время до окончания
             if (!this.room.isStarted) {
-                 this.secondsToEnd = 6000;
+                this.secondsToEnd = 6000;
             }
 
             this.room.isStarted = true;
@@ -197,6 +211,21 @@ let VueApp = {
                     this.presentation.isVisible = false;
                 }
             }
+        },
+
+        usersSortByName: function () {
+            this.users = this.users.sort((a, b) => {
+                let a_name = '9' + a.name,
+                    b_name = '9' + b.name;
+
+                a_name = a.leading ? '0' + a_name : a_name;
+                b_name = b.leading ? '0' + b_name : b_name;
+
+                a_name = a.id === this.user.id ? '5' + a_name : a_name;
+                b_name = b.id === this.user.id ? '5' + b_name : b_name;
+
+                return a_name === b_name ? 0 : a_name > b_name ? 1 : -1;
+            });
         },
 
 
@@ -256,6 +285,18 @@ let VueApp = {
             this.windowWidth = w.innerWidth || e.clientWidth || g.clientWidth;
             this.windowHeight = w.innerHeight || e.clientHeight || g.clientHeight;
         },
+
+        // Загрузка данных
+        loadData: async function (url) {
+            let response = await fetch(url);
+
+            if (response.ok) { // если HTTP-статус в диапазоне 200-299
+                // получаем тело ответа (см. про этот метод ниже)
+                return await response.json();
+            } else {
+                console.log("Ошибка HTTP: " + response.status);
+            }
+        }
     }
 };
 

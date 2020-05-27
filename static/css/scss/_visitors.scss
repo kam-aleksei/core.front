@@ -2,4 +2,23 @@
   width: 350px;
   min-width: 350px;
   height: calc(100vh - #{$header-height});
+
+  padding: 10px;
+
+  overflow-x: hidden;
+  overflow-y: scroll;
+
+  .visitors-list {
+    display: flex;
+
+    div {
+      width: 15px;
+      margin-right: 5px;
+
+      &:last-child {
+        margin-right: 0;
+        width: auto;
+      }
+    }
+  }
 }
