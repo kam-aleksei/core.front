@@ -63,7 +63,8 @@
             <!-- Settings Buttons Start -->
             <span>
                 <i @click="videoHideShow" :class="{'teal-text': video.isVisible}" class="material-icons cur">ondemand_video</i>
-                <i @click="presentationHideShow" :class="{'teal-text': presentation.isVisible}" class="material-icons cur">settings_system_daydream</i>
+                <i @click="presentationHideShow" :class="{'teal-text': presentation.isVisible}"
+                   class="material-icons cur">settings_system_daydream</i>
                 <i @click="chatHideShow" :class="{'teal-text': chat.isVisible}" class="material-icons cur">chat</i>
                 <i @click="visitorsHideShow" :class="{'teal-text': visitors.isVisible}" class="material-icons cur">people_outline</i>
                 <i class="material-icons cur">folder_open</i>
@@ -97,13 +98,38 @@
              class="purple lighten-5">
             PRESENTATION
 
-            <i v-if="!isPresentationMain" @click="setPresentationMain" class="material-icons set-main cur">aspect_ratio</i>
+            <i v-if="!isPresentationMain" @click="setPresentationMain"
+               class="material-icons set-main cur">aspect_ratio</i>
         </div>
         <!-- Presentation End -->
 
         <!-- Chat Start -->
-        <div v-show="chat.isVisible" class="green lighten-5 chat" :class="{'full-width': breakpoint.s}">
-            CHAT
+        <div v-show="chat.isVisible" class="chat" :class="{'full-width': breakpoint.s}">
+            <div>
+                <div v-for="mess in chat.messages" class="row m-b-10">
+                    <div class="col s2">
+                        {{ mess.time }}
+                    </div>
+                    <div class="col s10 truncate valign-wrapper">
+                         <i v-if="isUserLeadingByID(mess.user_id)" class="material-icons tiny cur">person</i>
+                        {{ userNameByID(mess.user_id) }}
+                    </div>
+                    <div class="col s12">
+                        {{ mess.text }}
+                         <i v-if="user.leading" @click="deleteMessageByID(mess.id)" class="material-icons tiny cur">clear</i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s10 input-field">
+                    <textarea id="textarea1" class="materialize-textarea"></textarea>
+                    <label for="textarea1">Сообщение</label>
+                </div>
+                <div class="col s2">
+                     <i @click="" class="material-icons cur">send</i>
+                </div>
+            </div>
         </div>
         <!-- Chat End -->
 

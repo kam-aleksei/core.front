@@ -40,6 +40,11 @@ let VueApp = {
                 this.usersSortByName();
             });
 
+        // Загружаем сообщения чата
+        this.loadData('./data/chat.json')
+            .then((res) => {
+                this.chat.messages = res;
+            });
     },
 
     data: {
@@ -77,11 +82,14 @@ let VueApp = {
 
         chat: {
             isVisible: true,
+            messages: []
         },
 
         visitors: {
             isVisible: false,
             sortByNameAsc: true,
+
+            list: []
         },
 
         secondsToEnd: 0,
@@ -177,7 +185,7 @@ let VueApp = {
         },
 
 
-        // Методы управления чатом
+        // Методы управления чатом ---------------------------------------------------------------------
         chatHideShow: function () {
             this.chat.isVisible = !this.chat.isVisible;
 
@@ -195,8 +203,13 @@ let VueApp = {
             }
         },
 
+        // Удаление собщения по id
+        deleteMessageByID: function (id) {
+            this.chat.messages = this.chat.messages.filter(a => a.id !== id);
+        },
 
-        // Методы управления посетителями
+
+        // Методы управления посетителями ----------------------------------------------------------------
         visitorsHideShow: function () {
             this.visitors.isVisible = !this.visitors.isVisible;
 
@@ -211,6 +224,24 @@ let VueApp = {
                     this.video.isVisible = false;
                     this.presentation.isVisible = false;
                 }
+            }
+        },
+
+        // Имя пользователя по id
+        userNameByID: function (id) {
+            try {
+                return this.users.find(a => a.id === id).name;
+            } catch (e) {
+                return 'undefined';
+            }
+        },
+
+        // Проверка является ли пользователь ведущим по id
+        isUserLeadingByID: function (id) {
+            try {
+                return this.users.find(a => a.id === id).leading;
+            } catch (e) {
+                return false;
             }
         },
 
@@ -248,7 +279,7 @@ let VueApp = {
         },
 
 
-        // Методы управления видео
+        // Методы управления видео ---------------------------------------------------------------------------
         videoHideShow: function () {
             this.video.isVisible = !this.video.isVisible;
 
@@ -271,7 +302,8 @@ let VueApp = {
             this.room.mainElement = 'video';
         },
 
-        // Методы управления презентацией
+
+        // Методы управления презентацией ----------------------------------------------------------------------
         presentationHideShow: function () {
             this.presentation.isVisible = !this.presentation.isVisible;
 
@@ -293,6 +325,9 @@ let VueApp = {
         setPresentationMain: function () {
             this.room.mainElement = 'presentation';
         },
+
+
+        // Системное ----------------------------------------------------------------------------------------
 
         // Вычисляем размер окна
         calcWidthHeight: function () {
