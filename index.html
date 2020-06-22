@@ -79,27 +79,45 @@
 
     <div style="display: flex; position: relative">
         <!-- Video Start -->
-        <div v-show="video.isVisible"
+        <div id="video" v-show="video.isVisible"
              :class="[{'video-big full-width': isVideoMain || breakpoint.s, 'video-small': !isVideoMain && !breakpoint.s}]"
-             :style="{ right : styleSmallRight + 'px' }"
-             class="blue lighten-5">
-            <span v-if="!room.isStarted">VIDEO - ROOM NOT STARTED</span>
-            <span v-if="room.isStarted && !room.isPaused">VIDEO - ROOM STARTED</span>
-            <span v-if="room.isStarted && room.isPaused">VIDEO - ROOM PAUSED</span>
+             :style="{ right : styleVideoSmallRight + 'px' }"
+             class="grey lighten-4">
+<!--            <span v-if="!room.isStarted">VIDEO - ROOM NOT STARTED</span>-->
+<!--            <span v-if="room.isStarted && !room.isPaused">VIDEO - ROOM STARTED</span>-->
+<!--            <span v-if="room.isStarted && room.isPaused">VIDEO - ROOM PAUSED</span>-->
 
             <i v-if="!isVideoMain" @click="setVideoMain" class="material-icons set-main cur">aspect_ratio</i>
+
+            <video id="video-holder" autoplay="true"></video>
         </div>
         <!-- Video End -->
 
         <!-- Presentation Start -->
-        <div v-show="presentation.isVisible"
+        <div id="presentation" v-show="presentation.isVisible"
              :class="[{'presentation-big full-width': isPresentationMain || breakpoint.s, 'presentation-small': !isPresentationMain && !breakpoint.s}]"
-             :style="{ right : styleSmallRight + 'px' }"
-             class="purple lighten-5">
-            PRESENTATION
+             :style="{ right : stylePresentationSmallRight + 'px' }"
+             class="grey lighten-5">
+            <img src="data/slide-0.jpg">
 
             <i v-if="!isPresentationMain" @click="setPresentationMain"
                class="material-icons set-main cur">aspect_ratio</i>
+
+            <div v-if="isPresentationMain" class="presentation-slider grey lighten-3">
+                <div class="row m-b-0">
+                    <div class="col s1">
+                        <i class="material-icons set-main cur">first_page</i>
+                    </div>
+                    <div class="col s10 center-align">
+                        <i class="material-icons set-main cur left">chevron_left</i>
+                        <span>1 из 10</span>
+                        <i class="material-icons set-main cur right">chevron_right</i>
+                    </div>
+                    <div class="col s1 right-align">
+                        <i class="material-icons set-main cur">last_page</i>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- Presentation End -->
 
@@ -108,33 +126,35 @@
             <div>
                 <div v-for="mess in chat.messages" class="row m-b-10">
                     <div class="col s2">
-                        {{ mess.time }}
+                        <strong>{{ mess.time }}</strong>
                     </div>
-                    <div class="col s10 truncate valign-wrapper">
+                    <div class="col s9 truncate valign-wrapper">
                          <i v-if="isUserLeadingByID(mess.user_id)" class="material-icons tiny cur">person</i>
-                        {{ userNameByID(mess.user_id) }}
+                        <strong>{{ userNameByID(mess.user_id) }}</strong>
+                    </div>
+                    <div class="col s1">
+                        <i v-if="user.leading" @click="deleteMessageByID(mess.id)" class="material-icons tiny cur">clear</i>
                     </div>
                     <div class="col s12">
                         {{ mess.text }}
-                         <i v-if="user.leading" @click="deleteMessageByID(mess.id)" class="material-icons tiny cur">clear</i>
                     </div>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col s10 input-field">
-                    <textarea id="textarea1" class="materialize-textarea"></textarea>
-                    <label for="textarea1">Сообщение</label>
-                </div>
-                <div class="col s2">
-                     <i @click="" class="material-icons cur">send</i>
-                </div>
-            </div>
+<!--            <div class="row">-->
+<!--                <div class="col s10 input-field">-->
+<!--                    <textarea id="textarea1" class="materialize-textarea"></textarea>-->
+<!--                    <label for="textarea1">Сообщение</label>-->
+<!--                </div>-->
+<!--                <div class="col s2">-->
+<!--                     <i @click="" class="material-icons cur">send</i>-->
+<!--                </div>-->
+<!--            </div>-->
         </div>
         <!-- Chat End -->
 
         <!-- Visitors Start -->
-        <div v-show="visitors.isVisible" class="lime lighten-5 visitors" :class="{'full-width': breakpoint.s}">
+        <div v-show="visitors.isVisible" class="visitors" :class="{'full-width': breakpoint.s}">
             <div class="visitors-header">
                 <div>
                     <i @click="usersSortByHand" class="material-icons tiny cur">arrow_upward</i>
@@ -144,9 +164,10 @@
                 <div>
                     <i @click="usersSortByName" class="material-icons tiny cur">sort_by_alpha</i>
                 </div>
-                <div>
-                    <i class="material-icons tiny right">settings</i>
-                </div>
+                <div></div>
+<!--                <div>-->
+<!--                    <i class="material-icons tiny right">settings</i>-->
+<!--                </div>-->
             </div>
 
             <div v-for="u in users" class="visitors-list">

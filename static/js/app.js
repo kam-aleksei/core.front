@@ -33,6 +33,18 @@ let VueApp = {
             this.video.isVisible = false;
         }
 
+        // Захватываем камеру
+        this.videoHolder = document.getElementById('video-holder');
+        if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({video: true})
+                .then(stream => {
+                    this.videoHolder.srcObject = stream;
+                })
+                .catch(function (error) {
+                    console.log("Something went wrong!");
+                });
+        }
+
         // Загружаем пользователей
         this.loadData('./data/users.json')
             .then((res) => {
@@ -74,6 +86,7 @@ let VueApp = {
 
         video: {
             isVisible: true,
+            videoHolder: undefined
         },
 
         presentation: {
@@ -120,15 +133,21 @@ let VueApp = {
             return this.room.mainElement === 'presentation';
         },
 
-        // Смещение относительно края экрана для видео и презентации
+        // Смещение относительно края экрана для видео и презентации, если они маленькие
         styleSmallRight: function () {
             const delta = 350;
             return 10 + (this.chat.isVisible ? delta : 0) + (this.visitors.isVisible ? delta : 0);
         },
+        stylePresentationSmallRight: function () {
+            return this.isPresentationMain ? 0 : this.styleSmallRight;
+        },
+        styleVideoSmallRight: function () {
+            return this.isVideoMain ? 0 : this.styleSmallRight;
+        },
 
         // Работа с сеткой
         breakpoint: function () {
-            const s = 600, m = 992, l = 1200;
+            const s = 669, m = 992, l = 1200;
 
             return {
                 thresholds: {
@@ -152,7 +171,7 @@ let VueApp = {
             }
 
             // На маленьком разрешении отключем чат и посетителей
-            if (val < this.breakpoint.thresholds.m) {
+            if (val < this.breakpoint.thresholds.s) {
                 this.chat.isVisible = false;
                 this.visitors.isVisible = false;
             }

@@ -3,6 +3,9 @@
   min-width: 350px;
   height: calc(100vh - #{$header-height});
 
+  border: solid black;
+  border-width: 0 1px 1px 0;
+
   padding-top: 10px;
   padding-bottom: 10px;
 
