@@ -59,17 +59,17 @@
             {{ room.title }}
         </div>
 
-        <div class="col s8 m5 l3">
+        <div class="col s8 m5 l3 center-align">
             <!-- Settings Buttons Start -->
-            <span>
+            <span v-if="!breakpoint.s">
                 <i @click="videoHideShow" :class="{'teal-text': video.isVisible}" class="material-icons cur">ondemand_video</i>
                 <i @click="presentationHideShow" :class="{'teal-text': presentation.isVisible}"
                    class="material-icons cur">settings_system_daydream</i>
                 <i @click="chatHideShow" :class="{'teal-text': chat.isVisible}" class="material-icons cur">chat</i>
                 <i @click="visitorsHideShow" :class="{'teal-text': visitors.isVisible}" class="material-icons cur">people_outline</i>
+            </span>
                 <i class="material-icons cur">folder_open</i>
                 <i class="material-icons cur">settings</i>
-            </span>
             <!-- Settings Buttons End -->
 
             <i class="material-icons right cur">exit_to_app</i>
@@ -77,10 +77,12 @@
     </div>
     <!-- Header End -->
 
-    <div style="display: flex; position: relative">
+    <div class="main" :class="[{'main-small': breakpoint.s}]">
+
         <!-- Video Start -->
         <div id="video" v-show="video.isVisible"
-             :class="[{'video-big full-width': isVideoMain || breakpoint.s, 'video-small': !isVideoMain && !breakpoint.s}]"
+             :class="[{'video-big full-width': isVideoMain,
+                       'video-small': !isVideoMain}]"
              :style="{ right : styleVideoSmallRight + 'px' }"
              class="grey lighten-4">
 <!--            <span v-if="!room.isStarted">VIDEO - ROOM NOT STARTED</span>-->
@@ -95,7 +97,8 @@
 
         <!-- Presentation Start -->
         <div id="presentation" v-show="presentation.isVisible"
-             :class="[{'presentation-big full-width': isPresentationMain || breakpoint.s, 'presentation-small': !isPresentationMain && !breakpoint.s}]"
+             :class="[{'presentation-big full-width': isPresentationMain,
+                       'presentation-small': !isPresentationMain}]"
              :style="{ right : stylePresentationSmallRight + 'px' }"
              class="grey lighten-5">
             <img src="data/slide-0.jpg">
@@ -122,7 +125,7 @@
         <!-- Presentation End -->
 
         <!-- Chat Start -->
-        <div v-show="chat.isVisible" class="chat" :class="{'full-width': breakpoint.s}">
+        <div v-show="chat.isVisible" class="chat">
             <div>
                 <div v-for="mess in chat.messages" class="row m-b-10">
                     <div class="col s2">
@@ -140,21 +143,11 @@
                     </div>
                 </div>
             </div>
-
-<!--            <div class="row">-->
-<!--                <div class="col s10 input-field">-->
-<!--                    <textarea id="textarea1" class="materialize-textarea"></textarea>-->
-<!--                    <label for="textarea1">Сообщение</label>-->
-<!--                </div>-->
-<!--                <div class="col s2">-->
-<!--                     <i @click="" class="material-icons cur">send</i>-->
-<!--                </div>-->
-<!--            </div>-->
         </div>
         <!-- Chat End -->
 
         <!-- Visitors Start -->
-        <div v-show="visitors.isVisible" class="visitors" :class="{'full-width': breakpoint.s}">
+        <div v-show="visitors.isVisible" class="visitors">
             <div class="visitors-header">
                 <div>
                     <i @click="usersSortByHand" class="material-icons tiny cur">arrow_upward</i>
@@ -165,9 +158,6 @@
                     <i @click="usersSortByName" class="material-icons tiny cur">sort_by_alpha</i>
                 </div>
                 <div></div>
-<!--                <div>-->
-<!--                    <i class="material-icons tiny right">settings</i>-->
-<!--                </div>-->
             </div>
 
             <div v-for="u in users" class="visitors-list">

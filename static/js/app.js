@@ -25,10 +25,7 @@ let VueApp = {
         this.calcWidthHeight();
         window.addEventListener('resize', this.calcWidthHeight, {passive: true});
 
-        // Для мобильного по умолчанию отключаем чат и видео
-        if (this.windowWidth <= this.breakpoint.thresholds.m) {
-            this.chat.isVisible = false;
-        }
+        // Для мобильного по умолчанию отключаем видео
         if (this.breakpoint.s) {
             this.video.isVisible = false;
         }
@@ -172,7 +169,6 @@ let VueApp = {
 
             // На маленьком разрешении отключем чат и посетителей
             if (val < this.breakpoint.thresholds.s) {
-                this.chat.isVisible = false;
                 this.visitors.isVisible = false;
             }
 
