@@ -204,13 +204,6 @@ let VueApp = {
             return this.orientation === "album";
         },
         windowWidthEventHandler: function (val) {
-            console.error(this.md.mobile());
-            console.error(this.md.phone());
-            console.error(this.md.tablet());
-            console.error('handler triggered');
-            console.error(this.windowWidth, this.windowHeight);
-            console.error(this.windowHeight < this.breakpoint.thresholds.s
-                || this.windowWidth < this.breakpoint.thresholds.s);
             let mode;
 
             if (
@@ -226,10 +219,6 @@ let VueApp = {
                     mode = "large";
                 }
             }
-
-            console.error(mode);
-            console.error(this.breakpoint.thresholds.s);
-
             if (this.currentMode !== mode && this.modeSwitch === false) {
                 this.currentMode = mode;
                 this.getBlocksState(mode);
@@ -237,7 +226,6 @@ let VueApp = {
             } else {
                 this.modeSwitch = false;
             }
-            console.error(this.currentMode);
         },
 
         // Методы управления мероприятием
@@ -377,6 +365,7 @@ let VueApp = {
             this.room.mainElement = "video";
             this.blocks.medium.main = "video";
             this.blocks.large.main = "video";
+            this.setBlocksState();
         },
 
 
@@ -403,6 +392,7 @@ let VueApp = {
             this.room.mainElement = "presentation";
             this.blocks.medium.main = "presentation";
             this.blocks.large.main = "presentation";
+            this.setBlocksState();
         },
         // Системное ----------------------------------------------------------------------------------------
 

@@ -2,7 +2,11 @@
 <html lang="ru">
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1">-->
+    <meta name="viewport" content="height=device-height,
+                      width=device-width, initial-scale=1.0,
+                      minimum-scale=1.0, maximum-scale=1.0,
+                      user-scalable=no, target-densitydpi=device-dpi">
     <meta charset="UTF-8">
     <title>Пеликан</title>
 
@@ -17,7 +21,11 @@
     <!-- Header Start -->
     <div id="header" class="row grey lighten-3 m-b-0 valign-wrapper">
         <!-- Status Buttons Start -->
-        <div id="room-control-buttons" class="col s4 m2 l2 valign-wrapper">
+        <div id="room-control-buttons" class="col s6 m4 l2 valign-wrapper" :class="[{
+        's2 m2 l3': this.currentModeIsSmall(),
+        's2 m2 l3': !this.currentModeIsSmall(),
+
+        }]">
             <span v-if="user.leading">
                 <i v-if="isShowStartButton" @click="roomStartResume" class="material-icons cur">play_circle_outline</i>
                 <i v-if="isShowPauseButton" @click="roomPause" class="material-icons cur">pause_circle_outline</i>
@@ -31,7 +39,7 @@
             {{ room.title }}
         </div>
 
-        <div class="col s8 m5 l3 center-align header-button-holder">
+        <div class="col s4 m5 l3 center-align header-button-holder">
             <!-- Settings Buttons Start -->
             <span class="button-block" v-if="!this.currentModeIsSmall()">
                 <i @click="videoHideShow" :class="{'teal-text': video.isVisible}" class="material-icons cur">ondemand_video</i>
@@ -40,8 +48,10 @@
                 <i @click="chatHideShow" :class="{'teal-text': chat.isVisible}" class="material-icons cur">chat</i>
                 <i @click="visitorsHideShow" :class="{'teal-text': visitors.isVisible}" class="material-icons cur">people_outline</i>
             </span>
-            <i class="material-icons cur">folder_open</i>
-            <i class="material-icons cur">settings</i>
+            <span class="settings-block">
+                <i class="material-icons cur">folder_open</i>
+                <i class="material-icons cur">settings</i>
+            </span>
             <!-- Settings Buttons End -->
 
             <i class="material-icons right cur">exit_to_app</i>
@@ -79,7 +89,7 @@
              :class="[{
              'presentation-big': isPresentationMain,
              'full-width': isPresentationMain && !this.deviceIsMobile(),
-             'presentation-small': !isPresentationMain,
+             'presentation-small': !isPresentationMain && !this.currentModeIsSmall(),
              'small-mode': this.currentModeIsSmall(),
               'small-mode-top': this.currentModeIsSmall() && smallModeBlockIsTop('presentation'),
               'small-mode-bottom': this.currentModeIsSmall() && smallModeBlockIsBottom('presentation'),
@@ -90,10 +100,10 @@
              class="grey lighten-5">
             <img src="data/slide-0.jpg">
 
-            <i v-if="!isPresentationMain" @click="setPresentationMain"
+            <i v-if="!isPresentationMain && !this.currentModeIsSmall()" @click="setPresentationMain"
                class="material-icons set-main cur">aspect_ratio</i>
 
-            <div v-if="isPresentationMain" class="presentation-slider grey lighten-3">
+            <div v-if="isPresentationMain || this.currentModeIsSmall()" class="presentation-slider grey lighten-3">
                 <div class="row m-b-0">
                     <div class="col s1">
                         <i class="material-icons set-main cur">first_page</i>
@@ -229,9 +239,7 @@
 <!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.4/mobile-detect.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.4/mobile-detect-modernizr.js"></script>
 
 <script src="static/js/moment.min.js"></script>
 <script src="static/js/app.js"></script>

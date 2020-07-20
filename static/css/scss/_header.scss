@@ -6,9 +6,20 @@
   }
 
   .header-button-holder{
+    display: block;
       i{
         position: relative;
         top: 3px;
       }
+
+    & > .settings-block{
+        right: 70px;
+      position: absolute;
+    }
+
+        & > .button-block{
+        right: 140px;
+      position: absolute;
+    }
   }
 }
