@@ -2,6 +2,7 @@
 <html lang="ru">
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
     <title>Пеликан</title>
 
@@ -13,39 +14,10 @@
 <body>
 <div id="app">
 
-    <!--  !!! Удалить  -->
-    <div id="temp-modal" class="modal">
-        <div class="modal-content center-align">
-            <h4>Это временная модалка</h4>
-
-            <div class="switch m-b-10">
-                <label>
-                    Участник
-                    <input type="checkbox" v-model="user.leading">
-                    <span class="lever"></span>
-                    Ведущий
-                </label>
-            </div>
-
-            <div class="switch">
-                <label>
-                    Web-камера
-                    <input type="checkbox" v-model="room.isIPCams">
-                    <span class="lever"></span>
-                    IP-камеры
-                </label>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <a href="#!" class="modal-close waves-effect waves-green btn-flat">Закрыть</a>
-        </div>
-    </div>
-    <!--  !!! Удалить  -->
-
     <!-- Header Start -->
     <div id="header" class="row grey lighten-3 m-b-0 valign-wrapper">
         <!-- Status Buttons Start -->
-        <div class="col s4 m2 l2 valign-wrapper">
+        <div id="room-control-buttons" class="col s4 m2 l2 valign-wrapper">
             <span v-if="user.leading">
                 <i v-if="isShowStartButton" @click="roomStartResume" class="material-icons cur">play_circle_outline</i>
                 <i v-if="isShowPauseButton" @click="roomPause" class="material-icons cur">pause_circle_outline</i>
@@ -55,21 +27,21 @@
         </div>
         <!-- Status Buttons End -->
 
-        <div class="col m5 l7 hide-on-small-only truncate">
+        <div class="col m5 l7 truncate" v-if="!this.currentModeIsSmall()">
             {{ room.title }}
         </div>
 
-        <div class="col s8 m5 l3 center-align">
+        <div class="col s8 m5 l3 center-align header-button-holder">
             <!-- Settings Buttons Start -->
-            <span v-if="!breakpoint.s">
+            <span class="button-block" v-if="!this.currentModeIsSmall()">
                 <i @click="videoHideShow" :class="{'teal-text': video.isVisible}" class="material-icons cur">ondemand_video</i>
                 <i @click="presentationHideShow" :class="{'teal-text': presentation.isVisible}"
                    class="material-icons cur">settings_system_daydream</i>
                 <i @click="chatHideShow" :class="{'teal-text': chat.isVisible}" class="material-icons cur">chat</i>
                 <i @click="visitorsHideShow" :class="{'teal-text': visitors.isVisible}" class="material-icons cur">people_outline</i>
             </span>
-                <i class="material-icons cur">folder_open</i>
-                <i class="material-icons cur">settings</i>
+            <i class="material-icons cur">folder_open</i>
+            <i class="material-icons cur">settings</i>
             <!-- Settings Buttons End -->
 
             <i class="material-icons right cur">exit_to_app</i>
@@ -77,19 +49,26 @@
     </div>
     <!-- Header End -->
 
-    <div class="main" :class="[{'main-small': breakpoint.s}]">
+    <div id="main" class="main" :class="[{
+    'main-small': !this.deviceIsMobile() && this.currentModeIsSmall() || this.deviceIsMobile() && this.currentOrientationIsPortrait(),
+    }]">
 
         <!-- Video Start -->
         <div id="video" v-show="video.isVisible"
-             :class="[{'video-big full-width': isVideoMain,
-                       'video-small': !isVideoMain}]"
+             :class="[{
+             'video-big': isVideoMain,
+              'full-width': isVideoMain && !this.deviceIsMobile(),
+              'video-small': !isVideoMain && !this.currentModeIsSmall(),
+              'small-mode': this.currentModeIsSmall(),
+              'small-mode-top': this.currentModeIsSmall() && smallModeBlockIsTop('video'),
+              'small-mode-bottom': this.currentModeIsSmall() && smallModeBlockIsBottom('video'),
+                  'orientation-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
+    'orientation-column': this.deviceIsMobile() && this.currentOrientationIsPortrait() || !this.deviceIsMobile() && this.currentModeIsSmall()
+              }]"
              :style="{ right : styleVideoSmallRight + 'px' }"
              class="grey lighten-4">
-<!--            <span v-if="!room.isStarted">VIDEO - ROOM NOT STARTED</span>-->
-<!--            <span v-if="room.isStarted && !room.isPaused">VIDEO - ROOM STARTED</span>-->
-<!--            <span v-if="room.isStarted && room.isPaused">VIDEO - ROOM PAUSED</span>-->
 
-            <i v-if="!isVideoMain" @click="setVideoMain" class="material-icons set-main cur">aspect_ratio</i>
+            <i v-if="!isVideoMain && !this.currentModeIsSmall()" @click="setVideoMain" class="material-icons set-main cur">aspect_ratio</i>
 
             <video id="video-holder" autoplay="true"></video>
         </div>
@@ -97,8 +76,16 @@
 
         <!-- Presentation Start -->
         <div id="presentation" v-show="presentation.isVisible"
-             :class="[{'presentation-big full-width': isPresentationMain,
-                       'presentation-small': !isPresentationMain}]"
+             :class="[{
+             'presentation-big': isPresentationMain,
+             'full-width': isPresentationMain && !this.deviceIsMobile(),
+             'presentation-small': !isPresentationMain,
+             'small-mode': this.currentModeIsSmall(),
+              'small-mode-top': this.currentModeIsSmall() && smallModeBlockIsTop('presentation'),
+              'small-mode-bottom': this.currentModeIsSmall() && smallModeBlockIsBottom('presentation'),
+                  'orientation-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
+    'orientation-column': this.deviceIsMobile() && this.currentOrientationIsPortrait() ||  !this.deviceIsMobile() && this.currentModeIsSmall()
+             }]"
              :style="{ right : stylePresentationSmallRight + 'px' }"
              class="grey lighten-5">
             <img src="data/slide-0.jpg">
@@ -125,18 +112,35 @@
         <!-- Presentation End -->
 
         <!-- Chat Start -->
-        <div v-show="chat.isVisible" class="chat">
+        <div v-show="chat.isVisible" id="chat" class="chat" :class="[{
+        'small-mode': this.currentModeIsSmall(),
+        'small-mode-top': this.currentModeIsSmall() && smallModeBlockIsTop('chat'),
+        'small-mode-bottom': this.currentModeIsSmall() && smallModeBlockIsBottom('chat'),
+            'orientation-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
+    'orientation-column': this.deviceIsMobile() && this.currentOrientationIsPortrait() || !this.deviceIsMobile() && this.currentModeIsSmall()
+        }]">
+            <div class="chat-header row">
+                <div class="col s2">
+                    <i>Время</i>
+                </div>
+                <div class="col s9">
+                    <i>ФИО</i>
+                </div>
+                <div class="col s1">
+                </div>
+            </div>
             <div>
                 <div v-for="mess in chat.messages" class="row m-b-10">
                     <div class="col s2">
                         <strong>{{ mess.time }}</strong>
                     </div>
                     <div class="col s9 truncate valign-wrapper">
-                         <i v-if="isUserLeadingByID(mess.user_id)" class="material-icons tiny cur">person</i>
+                        <i v-if="isUserLeadingByID(mess.user_id)" class="material-icons tiny cur">person</i>
                         <strong>{{ userNameByID(mess.user_id) }}</strong>
                     </div>
                     <div class="col s1">
-                        <i v-if="user.leading" @click="deleteMessageByID(mess.id)" class="material-icons tiny cur">clear</i>
+                        <i v-if="user.leading" @click="deleteMessageByID(mess.id)"
+                           class="material-icons tiny cur">clear</i>
                     </div>
                     <div class="col s12">
                         {{ mess.text }}
@@ -147,7 +151,13 @@
         <!-- Chat End -->
 
         <!-- Visitors Start -->
-        <div v-show="visitors.isVisible" class="visitors">
+        <div v-show="visitors.isVisible" id="visitors" class="visitors" :class="[{
+        'small-mode': this.currentModeIsSmall(),
+        'small-mode-top': this.currentModeIsSmall() && smallModeBlockIsTop('visitors'),
+        'small-mode-bottom': this.currentModeIsSmall() && smallModeBlockIsBottom('visitors'),
+            'orientation-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
+    'orientation-column': this.deviceIsMobile() && this.currentOrientationIsPortrait() || !this.deviceIsMobile() && this.currentModeIsSmall()
+        }]">
             <div class="visitors-header">
                 <div>
                     <i @click="usersSortByHand" class="material-icons tiny cur">arrow_upward</i>
@@ -179,6 +189,36 @@
             </div>
         </div>
         <!-- Visitors End -->
+
+        <span class="button-block" v-if="this.currentModeIsSmall()" id="button-block-small-top" :class="[{
+            'position-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
+            'position-column': this.deviceIsMobile() && this.currentOrientationIsPortrait(),
+        }]">
+                <i v-show="smallModeCheckButtonsVisibility('video')" @click="smallModeSwitchTopBlock('video')"
+                   class="material-icons cur">ondemand_video</i>
+                <i v-show="smallModeCheckButtonsVisibility('presentation')"
+                   @click="smallModeSwitchTopBlock('presentation')"
+                   class="material-icons cur">settings_system_daydream</i>
+                <i v-show="smallModeCheckButtonsVisibility('chat')" @click="smallModeSwitchTopBlock('chat')"
+                   class="material-icons cur">chat</i>
+                <i v-show="smallModeCheckButtonsVisibility('visitors')" @click="smallModeSwitchTopBlock('visitors')"
+                   class="material-icons cur">people_outline</i>
+        </span>
+
+        <span class="button-block" v-if="this.currentModeIsSmall()" id="button-block-small-bottom" :class="[{
+            'position-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
+            'position-column': this.deviceIsMobile() && this.currentOrientationIsPortrait(),
+        }]">
+                <i v-show="smallModeCheckButtonsVisibility('video')" @click="smallModeSwitchBottomBlock('video')"
+                   class="material-icons cur">ondemand_video</i>
+                <i v-show="smallModeCheckButtonsVisibility('presentation')"
+                   @click="smallModeSwitchBottomBlock('presentation')"
+                   class="material-icons cur">settings_system_daydream</i>
+                <i v-show="smallModeCheckButtonsVisibility('chat')" @click="smallModeSwitchBottomBlock('chat')"
+                   class="material-icons cur">chat</i>
+                <i v-show="smallModeCheckButtonsVisibility('visitors')" @click="smallModeSwitchBottomBlock('visitors')"
+                   class="material-icons cur">people_outline</i>
+        </span>
     </div>
 
 </div>
@@ -189,12 +229,65 @@
 <!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.4/mobile-detect.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.4/mobile-detect-modernizr.js"></script>
 
 <script src="static/js/moment.min.js"></script>
 <script src="static/js/app.js"></script>
 
 <script>
+    !function (t, n, e) {
+        "undefined" != typeof module && module.exports ? module.exports = e() : t.verge = e()
+    }(this, 0, function () {
+        var t = {}, e = "undefined" != typeof window && window, n = "undefined" != typeof document && document,
+            o = n && n.documentElement, r = e.matchMedia || e.msMatchMedia, i = r ? function (t) {
+                return !!r.call(e, t).matches
+            } : function () {
+                return !1
+            }, u = t.viewportW = function () {
+                var t = o.clientWidth, n = e.innerWidth;
+                return t < n ? n : t
+            }, c = t.viewportH = function () {
+                var t = o.clientHeight, n = e.innerHeight;
+                return t < n ? n : t
+            };
+
+        function f() {
+            return {width: u(), height: c()}
+        }
+
+        function l(t, n) {
+            return !(!(t = t && !t.nodeType ? t[0] : t) || 1 !== t.nodeType) && function (t, n) {
+                var e = {};
+                return n = +n || 0, e.width = (e.right = t.right + n) - (e.left = t.left - n), e.height = (e.bottom = t.bottom + n) - (e.top = t.top - n), e
+            }(t.getBoundingClientRect(), n)
+        }
+
+        return t.mq = i, t.matchMedia = r ? function () {
+            return r.apply(e, arguments)
+        } : function () {
+            return {}
+        }, t.viewport = f, t.scrollX = function () {
+            return e.pageXOffset || o.scrollLeft
+        }, t.scrollY = function () {
+            return e.pageYOffset || o.scrollTop
+        }, t.rectangle = l, t.aspect = function (t) {
+            var n = (t = null == t ? f() : 1 === t.nodeType ? l(t) : t).height, e = t.width;
+            return n = "function" == typeof n ? n.call(t) : n, (e = "function" == typeof e ? e.call(t) : e) / n
+        }, t.inX = function (t, n) {
+            var e = l(t, n);
+            return !!e && 0 <= e.right && e.left <= u()
+        }, t.inY = function (t, n) {
+            var e = l(t, n);
+            return !!e && 0 <= e.bottom && e.top <= c()
+        }, t.inViewport = function (t, n) {
+            var e = l(t, n);
+            return !!e && 0 <= e.bottom && 0 <= e.right && e.top <= c() && e.left <= u()
+        }, t
+    });
     new Vue(VueApp);
+
 </script>
 </body>
 </html>

@@ -1,3 +1,14 @@
 #header {
   height: $header-height;
+
+  #room-control-buttons{
+    margin-left: 0;
+  }
+
+  .header-button-holder{
+      i{
+        position: relative;
+        top: 3px;
+      }
+  }
 }

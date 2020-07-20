@@ -1,17 +1,10 @@
-'use strict';
+"use strict";
 /* jshint esversion: 8 */
 
 let VueApp = {
-    el: '#app',
+    el: "#app",
 
     mounted: function () {
-
-        // !!! Удалить ---------------------------------------
-        let elem = document.querySelector('#temp-modal');
-        M.Modal.init(elem);
-        let instance = M.Modal.getInstance(elem);
-        // instance.open();
-        // ---------------------------------------------------
 
         // Счетчик времени до окончания мероприятия
         setInterval(() => {
@@ -23,16 +16,12 @@ let VueApp = {
         // Устанавливаем размер основных элементов
         // Пересчитываем размер основных элементов при изменении размера окна
         this.calcWidthHeight();
-        window.addEventListener('resize', this.calcWidthHeight, {passive: true});
-
-        // Для мобильного по умолчанию отключаем видео
-        if (this.breakpoint.s) {
-            this.video.isVisible = false;
-        }
+        window.addEventListener("resize", this.calcWidthHeight, {passive: true});
+        window.addEventListener("orientationchange", this.calcWidthHeight, {passive: true});
 
         // Захватываем камеру
-        this.videoHolder = document.getElementById('video-holder');
-        if (navigator.mediaDevices.getUserMedia) {
+        this.videoHolder = document.getElementById("video-holder");
+        if (navigator.mediaDevices) {
             navigator.mediaDevices.getUserMedia({video: true})
                 .then(stream => {
                     this.videoHolder.srcObject = stream;
@@ -43,20 +32,24 @@ let VueApp = {
         }
 
         // Загружаем пользователей
-        this.loadData('./data/users.json')
+        this.loadData("./data/users.json")
             .then((res) => {
                 this.users = res;
                 this.usersSortByName();
             });
 
         // Загружаем сообщения чата
-        this.loadData('./data/chat.json')
+        this.loadData("./data/chat.json")
             .then((res) => {
                 this.chat.messages = res;
             });
+
+        this.windowWidthEventHandler(this.windowWidth);
     },
 
     data: {
+        md: new MobileDetect(window.navigator.userAgent),
+        orientation: undefined,
         // Текущий пользователь
         user: {
             id: 1,
@@ -70,7 +63,7 @@ let VueApp = {
 
         // Комната
         room: {
-            title: 'Название мероприятия, которое проходит в данный момент',
+            title: "Название мероприятия, которое проходит в данный момент",
 
             isStarted: false,
             isPaused: false,
@@ -78,7 +71,7 @@ let VueApp = {
 
             isIPCams: true,
 
-            mainElement: 'presentation'
+            mainElement: "presentation"
         },
 
         video: {
@@ -96,7 +89,7 @@ let VueApp = {
         },
 
         visitors: {
-            isVisible: false,
+            isVisible: true,
             sortByNameAsc: true,
 
             list: []
@@ -105,7 +98,32 @@ let VueApp = {
         secondsToEnd: 0,
 
         windowWidth: 0,
-        windowHeight: 0
+        windowHeight: 0,
+        currentMode: undefined,
+        modeSwitch: false,
+
+        blocks: {
+            small: {
+                active: {
+                    top: "video",
+                    bottom: "presentation"
+                },
+                inactive: [
+                    "chat",
+                    "visitors"
+                ]
+            },
+            medium: {
+                main: "presentation",
+                inactive: [
+                    "visitors"
+                ]
+            },
+            large: {
+                main: "presentation",
+                inactive: []
+            }
+        },
     },
 
     computed: {
@@ -120,14 +138,14 @@ let VueApp = {
         },
 
         timeToEndString: function () {
-            return moment('2000-01-01').seconds(this.secondsToEnd).format('HH:mm:ss');
+            return moment("2000-01-01").seconds(this.secondsToEnd).format("HH:mm:ss");
         },
 
         isVideoMain: function () {
-            return this.room.mainElement === 'video';
+            return this.room.mainElement === "video";
         },
         isPresentationMain: function () {
-            return this.room.mainElement === 'presentation';
+            return this.room.mainElement === "presentation";
         },
 
         // Смещение относительно края экрана для видео и презентации, если они маленькие
@@ -162,25 +180,66 @@ let VueApp = {
 
     watch: {
         windowWidth: function (val) {
-            // У чата приоритет над списком пользователей на маленьких разрешениях
-            if (val < this.breakpoint.thresholds.l && this.chat.isVisible) {
-                this.visitors.isVisible = false;
-            }
-
-            // На маленьком разрешении отключем чат и посетителей
-            if (val < this.breakpoint.thresholds.s) {
-                this.visitors.isVisible = false;
-            }
-
-            // На маленьком разрешении отключем презентацию или видео
-            if (val < this.breakpoint.thresholds.s) {
-                this.video.isVisible = this.isVideoMain;
-                this.presentation.isVisible = this.isPresentationMain;
-            }
+            this.windowWidthEventHandler(val);
         }
     },
 
     methods: {
+        deviceIsMobile: function () {
+            return this.md.phone() || this.md.tablet();
+        },
+        currentModeIsSmall: function () {
+            return this.currentMode === "small";
+        },
+        currentModeIsMedium: function () {
+            return this.currentMode === "medium";
+        },
+        currentModeIsLarge: function () {
+            return this.currentMode === "large";
+        },
+        currentOrientationIsPortrait: function () {
+            return this.orientation === "portrait";
+        },
+        currentOrientationIsAlbum: function () {
+            return this.orientation === "album";
+        },
+        windowWidthEventHandler: function (val) {
+            console.error(this.md.mobile());
+            console.error(this.md.phone());
+            console.error(this.md.tablet());
+            console.error('handler triggered');
+            console.error(this.windowWidth, this.windowHeight);
+            console.error(this.windowHeight < this.breakpoint.thresholds.s
+                || this.windowWidth < this.breakpoint.thresholds.s);
+            let mode;
+
+            if (
+                this.deviceIsMobile()
+            ) {
+                mode = "small";
+            } else {
+                if (val < this.breakpoint.thresholds.s) {
+                    mode = "small";
+                } else if (val < this.breakpoint.thresholds.m) {
+                    mode = "medium";
+                } else {
+                    mode = "large";
+                }
+            }
+
+            console.error(mode);
+            console.error(this.breakpoint.thresholds.s);
+
+            if (this.currentMode !== mode && this.modeSwitch === false) {
+                this.currentMode = mode;
+                this.getBlocksState(mode);
+                this.modeSwitch = true;
+            } else {
+                this.modeSwitch = false;
+            }
+            console.error(this.currentMode);
+        },
+
         // Методы управления мероприятием
         roomStartResume: function () {
             // Первый запуск инициализируем время до окончания
@@ -198,24 +257,24 @@ let VueApp = {
             this.room.isStopped = true;
             this.secondsToEnd = 0;
         },
-
-
         // Методы управления чатом ---------------------------------------------------------------------
         chatHideShow: function () {
             this.chat.isVisible = !this.chat.isVisible;
 
             // При включении чата
             if (this.chat.isVisible) {
+                let pos = this.blocks[this.currentMode].inactive.indexOf("chat");
+                this.blocks[this.currentMode].inactive.splice(pos, 1);
                 // На маленьком рзрешении, если включается чат, выключаем список посетителей
                 if (this.windowWidth < this.breakpoint.thresholds.l) {
                     this.visitors.isVisible = false;
+                    this.setBlockInactive("visitors");
                 }
-                // Для мобильника отключаем видео и презентацию
-                if (this.breakpoint.s) {
-                    this.video.isVisible = false;
-                    this.presentation.isVisible = false;
-                }
+            } else {
+                this.setBlockInactive("chat");
             }
+
+            this.setBlocksState();
         },
 
         // Удаление собщения по id
@@ -223,23 +282,23 @@ let VueApp = {
             this.chat.messages = this.chat.messages.filter(a => a.id !== id);
         },
 
-
         // Методы управления посетителями ----------------------------------------------------------------
         visitorsHideShow: function () {
             this.visitors.isVisible = !this.visitors.isVisible;
 
             // При включении посетителей
             if (this.visitors.isVisible) {
+                let pos = this.blocks[this.currentMode].inactive.indexOf("visitors");
+                this.blocks[this.currentMode].inactive.splice(pos, 1);
                 // На маленьком рзрешении, если включается чат, выключаем список посетителей
                 if (this.windowWidth < this.breakpoint.thresholds.l) {
                     this.chat.isVisible = false;
+                    this.setBlockInactive("chat");
                 }
-                // Для мобильника отключаем видео и презентацию
-                if (this.breakpoint.s) {
-                    this.video.isVisible = false;
-                    this.presentation.isVisible = false;
-                }
+            } else {
+                this.setBlockInactive("visitors");
             }
+            this.setBlocksState();
         },
 
         // Имя пользователя по id
@@ -247,7 +306,7 @@ let VueApp = {
             try {
                 return this.users.find(a => a.id === id).name;
             } catch (e) {
-                return 'undefined';
+                return "undefined";
             }
         },
 
@@ -300,21 +359,24 @@ let VueApp = {
 
             // При выключении видео делаем главной презентацию
             if (!this.video.isVisible) {
+                let pos = this.blocks[this.currentMode].inactive.indexOf("presentation");
+                if (pos > -1) {
+                    this.blocks[this.currentMode].inactive.splice(pos, 1);
+                }
                 this.presentation.isVisible = true;
                 this.setPresentationMain();
+                this.setBlockInactive("video");
+            } else {
+                let pos = this.blocks[this.currentMode].inactive.indexOf("video");
+                this.blocks[this.currentMode].inactive.splice(pos, 1);
             }
 
-            // Для мобильника отключаем все кроме видео
-            if (this.video.isVisible && this.breakpoint.s) {
-                this.setVideoMain();
-
-                this.presentation.isVisible = false;
-                this.chat.isVisible = false;
-                this.visitors.isVisible = false;
-            }
+            this.setBlocksState();
         },
         setVideoMain: function () {
-            this.room.mainElement = 'video';
+            this.room.mainElement = "video";
+            this.blocks.medium.main = "video";
+            this.blocks.large.main = "video";
         },
 
 
@@ -324,24 +386,24 @@ let VueApp = {
 
             // При выключении презентации делаем главной видео
             if (!this.presentation.isVisible) {
+                let pos = this.blocks[this.currentMode].inactive.indexOf("video");
+                if (pos > -1) {
+                    this.blocks[this.currentMode].inactive.splice(pos, 1);
+                }
                 this.video.isVisible = true;
                 this.setVideoMain();
+                this.setBlockInactive("presentation");
+            } else {
+                let pos = this.blocks[this.currentMode].inactive.indexOf("presentation");
+                this.blocks[this.currentMode].inactive.splice(pos, 1);
             }
-
-            // Для мобильника отключаем все кроме презентации
-            if (this.presentation.isVisible && this.breakpoint.s) {
-                this.setPresentationMain();
-
-                this.video.isVisible = false;
-                this.chat.isVisible = false;
-                this.visitors.isVisible = false;
-            }
+            this.setBlocksState();
         },
         setPresentationMain: function () {
-            this.room.mainElement = 'presentation';
+            this.room.mainElement = "presentation";
+            this.blocks.medium.main = "presentation";
+            this.blocks.large.main = "presentation";
         },
-
-
         // Системное ----------------------------------------------------------------------------------------
 
         // Вычисляем размер окна
@@ -349,10 +411,16 @@ let VueApp = {
             let w = window,
                 d = document,
                 e = d.documentElement,
-                g = d.getElementsByTagName('body')[0];
+                g = d.getElementsByTagName("body")[0];
 
-            this.windowWidth = w.innerWidth || e.clientWidth || g.clientWidth;
-            this.windowHeight = w.innerHeight || e.clientHeight || g.clientHeight;
+            this.windowWidth = verge.viewportW() || w.innerWidth || e.clientWidth || g.clientWidth;
+            this.windowHeight = verge.viewportH() || w.innerHeight || e.clientHeight || g.clientHeight;
+
+            if(this.windowWidth > this.windowHeight){
+                this.orientation = 'album';
+            }else{
+                this.orientation = 'portrait';
+            }
         },
 
         // Загрузка данных
@@ -365,6 +433,98 @@ let VueApp = {
             } else {
                 console.log("Ошибка HTTP: " + response.status);
             }
+        },
+        // Методы для маленького режима -----------------------
+        smallModeCheckButtonsVisibility: function (name) {
+            return this.blocks.small.inactive.indexOf(name) !== -1;
+        },
+        smallModeSwitchTopBlock: function (block) {
+            this.smallModeSwitchBlock("top", block);
+        },
+        smallModeSwitchBottomBlock: function (block) {
+            this.smallModeSwitchBlock("bottom", block);
+        },
+        smallModeSwitchBlock: function (position, block) {
+            let prevBlock = this.blocks.small.active[position];
+            let index = this.blocks.small.inactive.indexOf(block);
+            this.$set(this.blocks.small.active, position, block);
+            this.$set(this.blocks.small.inactive, index, prevBlock);
+            this[prevBlock].isVisible = false;
+            this[block].isVisible = true;
+            this.setBlocksState();
+        },
+        smallModeBlockIsTop: function (block) {
+            return this.blocks.small.active.top === block;
+        },
+        smallModeBlockIsBottom: function (block) {
+            return this.blocks.small.active.bottom === block;
+        },
+        // ------------------------------------------------------
+        setBlockInactive: function(block){
+            if(this.blocks[this.currentMode].inactive.indexOf(block) === -1){
+                this.blocks[this.currentMode].inactive.push(block);
+            }
+        },
+
+        getBlocksState: function (mode) {
+            let blocks = localStorage.getItem("blocksState");
+            if (blocks) {
+                blocks = JSON.parse(blocks);
+                this.blocks = blocks;
+            }
+            this.setModeState(mode);
+        },
+        setModeState: function (mode) {
+            switch (mode) {
+                case "small":
+                    this.setSmallMode();
+                    break;
+                case "medium":
+                    this.setMediumMode();
+                    break;
+                case "large":
+                    this.setLargeMode();
+                    break;
+                default:
+                    break;
+            }
+        },
+
+        setSmallMode: function () {
+            this[this.blocks.small.active.top].isVisible = true;
+            this[this.blocks.small.active.bottom].isVisible = true;
+            this[this.blocks.small.inactive[0]].isVisible = false;
+            this[this.blocks.small.inactive[1]].isVisible = false;
+        },
+        setMediumMode: function () {
+            this.room.mainElement = this.blocks.medium.main;
+            this[this.room.mainElement].isVisible = true;
+            if (this.blocks.medium.inactive.length > 0) {
+                for (const block of this.blocks.medium.inactive) {
+                    this[block].isVisible = false;
+                }
+            }
+        },
+        setLargeMode: function () {
+            this.room.mainElement = this.blocks.large.main;
+            this[this.room.mainElement].isVisible = true;
+            if (this.blocks.large.inactive.length > 0) {
+                for (const block of this.blocks.large.inactive) {
+                    this[block].isVisible = false;
+                }
+            } else {
+                this.setAllBlocksVisible();
+            }
+        },
+
+        setBlocksState: function () {
+            localStorage.setItem("blocksState", JSON.stringify(this.blocks));
+        },
+        setAllBlocksVisible: function () {
+            this.video.isVisible = true;
+            this.presentation.isVisible = true;
+            this.chat.isVisible = true;
+            this.visitors.isVisible = true;
         }
     }
 };

@@ -1,9 +1,63 @@
-.main {
+.main{
   position: relative;
   display: flex;
   flex-direction: row;
+  height: calc(100% - 40px);
 
   &-small {
     flex-direction: column;
+  }
+
+  & > .small-mode{
+    position: relative;
+    display: inline-block;
+
+    right: 0 !important;
+    top: 0 !important;
+    border: 0 !important;
+
+    &.orientation-row{
+      height: calc(100vh - 40px);
+      width: 50%;
+    }
+
+    &.orientation-column{
+      height: calc(50vh - 20px);
+      width: 100%;
+    }
+
+    &.small-mode-top{
+      order: 1;
+    }
+
+    &.small-mode-bottom{
+      order: 2;
+    }
+  }
+
+  .button-block{
+    position: absolute;
+    z-index: 101;
+    right: 15px;
+    top: 5px;
+    &#button-block-small-top{
+      &.position-row {
+        right: calc(50% + 15px)
+      }
+      &.position-column {
+        right: 15px;
+      }
+    }
+    &#button-block-small-bottom{
+      top: calc(50vh - 20px + 5px);
+      &.position-row {
+        top: 5px;
+      }
+      &.position-column {
+        top: calc(50vh - 20px + 5px);
+        right: 15px;
+      }
+    }
+
   }
 }
