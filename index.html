@@ -22,9 +22,7 @@
     <div id="header" class="row grey lighten-3 m-b-0 valign-wrapper">
         <!-- Status Buttons Start -->
         <div id="room-control-buttons" class="col s6 m4 l2 valign-wrapper" :class="[{
-        's2 m2 l3': this.currentModeIsSmall(),
-        's2 m2 l3': !this.currentModeIsSmall(),
-
+        's2 m2 l3': currentModeIsSmall(),
         }]">
             <span v-if="user.leading">
                 <i v-if="isShowStartButton" @click="roomStartResume" class="material-icons cur">play_circle_outline</i>
@@ -35,13 +33,13 @@
         </div>
         <!-- Status Buttons End -->
 
-        <div class="col m5 l7 truncate" v-if="!this.currentModeIsSmall()">
+        <div class="col m5 l7 truncate" v-if="!currentModeIsSmall()">
             {{ room.title }}
         </div>
 
         <div class="col s4 m5 l3 center-align header-button-holder">
             <!-- Settings Buttons Start -->
-            <span class="button-block" v-if="!this.currentModeIsSmall()">
+            <span class="button-block" v-if="!currentModeIsSmall()">
                 <i @click="videoHideShow" :class="{'teal-text': video.isVisible}" class="material-icons cur">ondemand_video</i>
                 <i @click="presentationHideShow" :class="{'teal-text': presentation.isVisible}"
                    class="material-icons cur">settings_system_daydream</i>
@@ -60,25 +58,27 @@
     <!-- Header End -->
 
     <div id="main" class="main" :class="[{
-    'main-small': !this.deviceIsMobile() && this.currentModeIsSmall() || this.deviceIsMobile() && this.currentOrientationIsPortrait(),
+    'main-small': !deviceIsMobile() && currentModeIsSmall() || deviceIsMobile() && currentOrientationIsPortrait(),
     }]">
-
+        <div id="default-block" v-show="!currentModeIsSmall() && (isVideoMain && !video.isVisible || isPresentationMain && !presentation.isVisible)">
+            <img src="static/img/default.png" />
+        </div>
         <!-- Video Start -->
         <div id="video" v-show="video.isVisible"
              :class="[{
              'video-big': isVideoMain,
-              'full-width': isVideoMain && !this.deviceIsMobile(),
-              'video-small': !isVideoMain && !this.currentModeIsSmall(),
-              'small-mode': this.currentModeIsSmall(),
-              'small-mode-top': this.currentModeIsSmall() && smallModeBlockIsTop('video'),
-              'small-mode-bottom': this.currentModeIsSmall() && smallModeBlockIsBottom('video'),
-                  'orientation-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
-    'orientation-column': this.deviceIsMobile() && this.currentOrientationIsPortrait() || !this.deviceIsMobile() && this.currentModeIsSmall()
+              'full-width': isVideoMain && !deviceIsMobile(),
+              'video-small': !isVideoMain && !currentModeIsSmall(),
+              'small-mode': currentModeIsSmall(),
+              'small-mode-top': currentModeIsSmall() && smallModeBlockIsTop(BLOCKS.VIDEO),
+              'small-mode-bottom': currentModeIsSmall() && smallModeBlockIsBottom(BLOCKS.VIDEO),
+                  'orientation-row': deviceIsMobile() && currentOrientationIsAlbum(),
+    'orientation-column': deviceIsMobile() && currentOrientationIsPortrait() || !deviceIsMobile() && currentModeIsSmall()
               }]"
              :style="{ right : styleVideoSmallRight + 'px' }"
              class="grey lighten-4">
 
-            <i v-if="!isVideoMain && !this.currentModeIsSmall()" @click="setVideoMain" class="material-icons set-main cur">aspect_ratio</i>
+            <i v-if="!isVideoMain && !currentModeIsSmall()" @click="setVideoMain" class="material-icons set-main cur">aspect_ratio</i>
 
             <video id="video-holder" autoplay="true"></video>
         </div>
@@ -88,22 +88,22 @@
         <div id="presentation" v-show="presentation.isVisible"
              :class="[{
              'presentation-big': isPresentationMain,
-             'full-width': isPresentationMain && !this.deviceIsMobile(),
-             'presentation-small': !isPresentationMain && !this.currentModeIsSmall(),
-             'small-mode': this.currentModeIsSmall(),
-              'small-mode-top': this.currentModeIsSmall() && smallModeBlockIsTop('presentation'),
-              'small-mode-bottom': this.currentModeIsSmall() && smallModeBlockIsBottom('presentation'),
-                  'orientation-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
-    'orientation-column': this.deviceIsMobile() && this.currentOrientationIsPortrait() ||  !this.deviceIsMobile() && this.currentModeIsSmall()
+             'full-width': isPresentationMain && !deviceIsMobile(),
+             'presentation-small': !isPresentationMain && !currentModeIsSmall(),
+             'small-mode': currentModeIsSmall(),
+              'small-mode-top': currentModeIsSmall() && smallModeBlockIsTop(BLOCKS.PRESENTATION),
+              'small-mode-bottom': currentModeIsSmall() && smallModeBlockIsBottom(BLOCKS.PRESENTATION),
+                  'orientation-row': deviceIsMobile() && currentOrientationIsAlbum(),
+    'orientation-column': deviceIsMobile() && currentOrientationIsPortrait() ||  !deviceIsMobile() && currentModeIsSmall()
              }]"
              :style="{ right : stylePresentationSmallRight + 'px' }"
              class="grey lighten-5">
             <img src="data/slide-0.jpg">
 
-            <i v-if="!isPresentationMain && !this.currentModeIsSmall()" @click="setPresentationMain"
+            <i v-if="!isPresentationMain && !currentModeIsSmall()" @click="setPresentationMain"
                class="material-icons set-main cur">aspect_ratio</i>
 
-            <div v-if="isPresentationMain || this.currentModeIsSmall()" class="presentation-slider grey lighten-3">
+            <div v-if="isPresentationMain || currentModeIsSmall()" class="presentation-slider grey lighten-3">
                 <div class="row m-b-0">
                     <div class="col s1">
                         <i class="material-icons set-main cur">first_page</i>
@@ -123,11 +123,11 @@
 
         <!-- Chat Start -->
         <div v-show="chat.isVisible" id="chat" class="chat" :class="[{
-        'small-mode': this.currentModeIsSmall(),
-        'small-mode-top': this.currentModeIsSmall() && smallModeBlockIsTop('chat'),
-        'small-mode-bottom': this.currentModeIsSmall() && smallModeBlockIsBottom('chat'),
-            'orientation-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
-    'orientation-column': this.deviceIsMobile() && this.currentOrientationIsPortrait() || !this.deviceIsMobile() && this.currentModeIsSmall()
+        'small-mode': currentModeIsSmall(),
+        'small-mode-top': currentModeIsSmall() && smallModeBlockIsTop(BLOCKS.CHAT),
+        'small-mode-bottom': currentModeIsSmall() && smallModeBlockIsBottom(BLOCKS.CHAT),
+            'orientation-row': deviceIsMobile() && currentOrientationIsAlbum(),
+    'orientation-column': deviceIsMobile() && currentOrientationIsPortrait() || !deviceIsMobile() && currentModeIsSmall()
         }]">
             <div class="chat-header row">
                 <div class="col s2">
@@ -162,11 +162,11 @@
 
         <!-- Visitors Start -->
         <div v-show="visitors.isVisible" id="visitors" class="visitors" :class="[{
-        'small-mode': this.currentModeIsSmall(),
-        'small-mode-top': this.currentModeIsSmall() && smallModeBlockIsTop('visitors'),
-        'small-mode-bottom': this.currentModeIsSmall() && smallModeBlockIsBottom('visitors'),
-            'orientation-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
-    'orientation-column': this.deviceIsMobile() && this.currentOrientationIsPortrait() || !this.deviceIsMobile() && this.currentModeIsSmall()
+        'small-mode': currentModeIsSmall(),
+        'small-mode-top': currentModeIsSmall() && smallModeBlockIsTop(BLOCKS.VISITORS),
+        'small-mode-bottom': currentModeIsSmall() && smallModeBlockIsBottom(BLOCKS.VISITORS),
+            'orientation-row': deviceIsMobile() && currentOrientationIsAlbum(),
+    'orientation-column': deviceIsMobile() && currentOrientationIsPortrait() || !deviceIsMobile() && currentModeIsSmall()
         }]">
             <div class="visitors-header">
                 <div>
@@ -200,33 +200,33 @@
         </div>
         <!-- Visitors End -->
 
-        <span class="button-block" v-if="this.currentModeIsSmall()" id="button-block-small-top" :class="[{
-            'position-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
-            'position-column': this.deviceIsMobile() && this.currentOrientationIsPortrait(),
+        <span class="button-block" v-if="currentModeIsSmall()" id="button-block-small-top" :class="[{
+            'position-row': deviceIsMobile() && currentOrientationIsAlbum(),
+            'position-column': deviceIsMobile() && currentOrientationIsPortrait(),
         }]">
-                <i v-show="smallModeCheckButtonsVisibility('video')" @click="smallModeSwitchTopBlock('video')"
+                <i v-show="smallModeCheckButtonsVisibility('video')" @click="smallModeSwitchTopBlock(BLOCKS.VIDEO)"
                    class="material-icons cur">ondemand_video</i>
-                <i v-show="smallModeCheckButtonsVisibility('presentation')"
-                   @click="smallModeSwitchTopBlock('presentation')"
+                <i v-show="smallModeCheckButtonsVisibility(BLOCKS.PRESENTATION)"
+                   @click="smallModeSwitchTopBlock(BLOCKS.PRESENTATION)"
                    class="material-icons cur">settings_system_daydream</i>
-                <i v-show="smallModeCheckButtonsVisibility('chat')" @click="smallModeSwitchTopBlock('chat')"
+                <i v-show="smallModeCheckButtonsVisibility('chat')" @click="smallModeSwitchTopBlock(BLOCKS.CHAT)"
                    class="material-icons cur">chat</i>
-                <i v-show="smallModeCheckButtonsVisibility('visitors')" @click="smallModeSwitchTopBlock('visitors')"
+                <i v-show="smallModeCheckButtonsVisibility(BLOCKS.VISITORS)" @click="smallModeSwitchTopBlock(BLOCKS.VISITORS)"
                    class="material-icons cur">people_outline</i>
         </span>
 
-        <span class="button-block" v-if="this.currentModeIsSmall()" id="button-block-small-bottom" :class="[{
-            'position-row': this.deviceIsMobile() && this.currentOrientationIsAlbum(),
-            'position-column': this.deviceIsMobile() && this.currentOrientationIsPortrait(),
+        <span class="button-block" v-if="currentModeIsSmall()" id="button-block-small-bottom" :class="[{
+            'position-row': deviceIsMobile() && currentOrientationIsAlbum(),
+            'position-column': deviceIsMobile() && currentOrientationIsPortrait(),
         }]">
-                <i v-show="smallModeCheckButtonsVisibility('video')" @click="smallModeSwitchBottomBlock('video')"
+                <i v-show="smallModeCheckButtonsVisibility(BLOCKS.VIDEO)" @click="smallModeSwitchBottomBlock(BLOCKS.VIDEO)"
                    class="material-icons cur">ondemand_video</i>
-                <i v-show="smallModeCheckButtonsVisibility('presentation')"
-                   @click="smallModeSwitchBottomBlock('presentation')"
+                <i v-show="smallModeCheckButtonsVisibility(BLOCKS.PRESENTATION)"
+                   @click="smallModeSwitchBottomBlock(BLOCKS.PRESENTATION)"
                    class="material-icons cur">settings_system_daydream</i>
-                <i v-show="smallModeCheckButtonsVisibility('chat')" @click="smallModeSwitchBottomBlock('chat')"
+                <i v-show="smallModeCheckButtonsVisibility(BLOCKS.CHAT)" @click="smallModeSwitchBottomBlock(BLOCKS.CHAT)"
                    class="material-icons cur">chat</i>
-                <i v-show="smallModeCheckButtonsVisibility('visitors')" @click="smallModeSwitchBottomBlock('visitors')"
+                <i v-show="smallModeCheckButtonsVisibility(BLOCKS.VISITORS)" @click="smallModeSwitchBottomBlock(BLOCKS.VISITORS)"
                    class="material-icons cur">people_outline</i>
         </span>
     </div>

@@ -2,7 +2,29 @@
   position: relative;
   display: flex;
   flex-direction: row;
+  justify-content: right;
   height: calc(100% - 40px);
+
+  & > #default-block{
+    //width: 300px;
+    background-color: #E8E8E8;
+    height: 100%;
+    position: relative;
+    width: 100% !important;
+    right: 0px;
+    & > img{
+          max-height: 100%;
+          max-width: 100%;
+          width: auto;
+          height: auto;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          margin: auto;
+    }
+  }
 
   &-small {
     flex-direction: column;

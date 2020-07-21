@@ -3,9 +3,9 @@
 
 let VueApp = {
     el: "#app",
-
     mounted: function () {
-
+        this.setDefaultBlocksState();
+        this.room.mainElement = this.BLOCKS.PRESENTATION;
         // Счетчик времени до окончания мероприятия
         setInterval(() => {
             if (this.secondsToEnd && this.secondsToEnd > 0) {
@@ -71,7 +71,7 @@ let VueApp = {
 
             isIPCams: true,
 
-            mainElement: "presentation"
+            mainElement: undefined,
         },
 
         video: {
@@ -102,28 +102,19 @@ let VueApp = {
         currentMode: undefined,
         modeSwitch: false,
 
-        blocks: {
-            small: {
-                active: {
-                    top: "video",
-                    bottom: "presentation"
-                },
-                inactive: [
-                    "chat",
-                    "visitors"
-                ]
-            },
-            medium: {
-                main: "presentation",
-                inactive: [
-                    "visitors"
-                ]
-            },
-            large: {
-                main: "presentation",
-                inactive: []
-            }
+        BLOCKS: {
+            VIDEO: "video",
+            PRESENTATION: "presentation",
+            CHAT: "chat",
+            VISITORS: "visitors"
         },
+        MODES: {
+            SMALL: "small",
+            MEDIUM: "medium",
+            LARGE: "large",
+        },
+
+        blocksState: undefined
     },
 
     computed: {
@@ -142,10 +133,10 @@ let VueApp = {
         },
 
         isVideoMain: function () {
-            return this.room.mainElement === "video";
+            return this.room.mainElement === this.BLOCKS.VIDEO;
         },
         isPresentationMain: function () {
-            return this.room.mainElement === "presentation";
+            return this.room.mainElement === this.BLOCKS.PRESENTATION;
         },
 
         // Смещение относительно края экрана для видео и презентации, если они маленькие
@@ -185,17 +176,41 @@ let VueApp = {
     },
 
     methods: {
+        setDefaultBlocksState: function(){
+            this.blocksState = {
+                small: {
+                    active: {
+                        top: this.BLOCKS.VIDEO,
+                        bottom: this.BLOCKS.PRESENTATION
+                    },
+                    inactive: [
+                        this.BLOCKS.CHAT,
+                        this.BLOCKS.VISITORS
+                    ]
+                },
+                medium: {
+                    main: this.BLOCKS.PRESENTATION,
+                    inactive: [
+                        this.BLOCKS.VISITORS
+                    ]
+                },
+                large: {
+                    main: this.BLOCKS.PRESENTATION,
+                    inactive: []
+                }
+            };
+        },
         deviceIsMobile: function () {
             return this.md.phone() || this.md.tablet();
         },
         currentModeIsSmall: function () {
-            return this.currentMode === "small";
+            return this.currentMode === this.MODES.SMALL;
         },
         currentModeIsMedium: function () {
-            return this.currentMode === "medium";
+            return this.currentMode === this.MODES.MEDIUM;
         },
         currentModeIsLarge: function () {
-            return this.currentMode === "large";
+            return this.currentMode === this.MODES.LARGE;
         },
         currentOrientationIsPortrait: function () {
             return this.orientation === "portrait";
@@ -209,14 +224,14 @@ let VueApp = {
             if (
                 this.deviceIsMobile()
             ) {
-                mode = "small";
+                mode = this.MODES.SMALL;
             } else {
                 if (val < this.breakpoint.thresholds.s) {
-                    mode = "small";
+                    mode = this.MODES.SMALL;
                 } else if (val < this.breakpoint.thresholds.m) {
-                    mode = "medium";
+                    mode = this.MODES.MEDIUM;
                 } else {
-                    mode = "large";
+                    mode = this.MODES.LARGE;
                 }
             }
             if (this.currentMode !== mode && this.modeSwitch === false) {
@@ -251,15 +266,15 @@ let VueApp = {
 
             // При включении чата
             if (this.chat.isVisible) {
-                let pos = this.blocks[this.currentMode].inactive.indexOf("chat");
-                this.blocks[this.currentMode].inactive.splice(pos, 1);
+                let pos = this.blocksState[this.currentMode].inactive.indexOf(this.BLOCKS.CHAT);
+                this.blocksState[this.currentMode].inactive.splice(pos, 1);
                 // На маленьком рзрешении, если включается чат, выключаем список посетителей
                 if (this.windowWidth < this.breakpoint.thresholds.l) {
                     this.visitors.isVisible = false;
-                    this.setBlockInactive("visitors");
+                    this.setBlockInactive(this.BLOCKS.VISITORS);
                 }
             } else {
-                this.setBlockInactive("chat");
+                this.setBlockInactive(this.BLOCKS.CHAT);
             }
 
             this.setBlocksState();
@@ -276,15 +291,15 @@ let VueApp = {
 
             // При включении посетителей
             if (this.visitors.isVisible) {
-                let pos = this.blocks[this.currentMode].inactive.indexOf("visitors");
-                this.blocks[this.currentMode].inactive.splice(pos, 1);
+                let pos = this.blocksState[this.currentMode].inactive.indexOf(this.BLOCKS.VISITORS);
+                this.blocksState[this.currentMode].inactive.splice(pos, 1);
                 // На маленьком рзрешении, если включается чат, выключаем список посетителей
                 if (this.windowWidth < this.breakpoint.thresholds.l) {
                     this.chat.isVisible = false;
-                    this.setBlockInactive("chat");
+                    this.setBlockInactive(this.BLOCKS.CHAT);
                 }
             } else {
-                this.setBlockInactive("visitors");
+                this.setBlockInactive(this.BLOCKS.VISITORS);
             }
             this.setBlocksState();
         },
@@ -347,24 +362,27 @@ let VueApp = {
 
             // При выключении видео делаем главной презентацию
             if (!this.video.isVisible) {
-                let pos = this.blocks[this.currentMode].inactive.indexOf("presentation");
-                if (pos > -1) {
-                    this.blocks[this.currentMode].inactive.splice(pos, 1);
+                if(!this.currentModeIsSmall()){
+                    this.setBlockInactive(this.BLOCKS.VIDEO, this.MODES.LARGE);
+                    this.setBlockInactive(this.BLOCKS.VIDEO, this.MODES.MEDIUM);
+                }else{
+                    this.setBlockInactive(this.BLOCKS.VIDEO);
                 }
-                this.presentation.isVisible = true;
-                this.setPresentationMain();
-                this.setBlockInactive("video");
             } else {
-                let pos = this.blocks[this.currentMode].inactive.indexOf("video");
-                this.blocks[this.currentMode].inactive.splice(pos, 1);
+                if(!this.currentModeIsSmall()){
+                    this.setBlockActive(this.BLOCKS.VIDEO, this.MODES.LARGE);
+                    this.setBlockActive(this.BLOCKS.VIDEO, this.MODES.MEDIUM);
+                }else{
+                    this.setBlockActive(this.BLOCKS.VIDEO);
+                }
             }
 
             this.setBlocksState();
         },
         setVideoMain: function () {
-            this.room.mainElement = "video";
-            this.blocks.medium.main = "video";
-            this.blocks.large.main = "video";
+            this.room.mainElement = this.BLOCKS.VIDEO;
+            this.blocksState.medium.main = this.BLOCKS.VIDEO;
+            this.blocksState.large.main = this.BLOCKS.VIDEO;
             this.setBlocksState();
         },
 
@@ -375,23 +393,26 @@ let VueApp = {
 
             // При выключении презентации делаем главной видео
             if (!this.presentation.isVisible) {
-                let pos = this.blocks[this.currentMode].inactive.indexOf("video");
-                if (pos > -1) {
-                    this.blocks[this.currentMode].inactive.splice(pos, 1);
+                if(!this.currentModeIsSmall()){
+                    this.setBlockInactive(this.BLOCKS.PRESENTATION, this.MODES.LARGE);
+                    this.setBlockInactive(this.BLOCKS.PRESENTATION, this.MODES.MEDIUM);
+                }else{
+                    this.setBlockInactive(this.BLOCKS.PRESENTATION);
                 }
-                this.video.isVisible = true;
-                this.setVideoMain();
-                this.setBlockInactive("presentation");
             } else {
-                let pos = this.blocks[this.currentMode].inactive.indexOf("presentation");
-                this.blocks[this.currentMode].inactive.splice(pos, 1);
+                if(!this.currentModeIsSmall()){
+                    this.setBlockActive(this.BLOCKS.PRESENTATION, this.MODES.LARGE);
+                    this.setBlockActive(this.BLOCKS.PRESENTATION, this.MODES.MEDIUM);
+                }else{
+                    this.setBlockActive(this.BLOCKS.PRESENTATION);
+                }
             }
             this.setBlocksState();
         },
         setPresentationMain: function () {
-            this.room.mainElement = "presentation";
-            this.blocks.medium.main = "presentation";
-            this.blocks.large.main = "presentation";
+            this.room.mainElement = this.BLOCKS.PRESENTATION;
+            this.blocksState.medium.main = this.BLOCKS.PRESENTATION;
+            this.blocksState.large.main = this.BLOCKS.PRESENTATION;
             this.setBlocksState();
         },
         // Системное ----------------------------------------------------------------------------------------
@@ -407,9 +428,9 @@ let VueApp = {
             this.windowHeight = verge.viewportH() || w.innerHeight || e.clientHeight || g.clientHeight;
 
             if(this.windowWidth > this.windowHeight){
-                this.orientation = 'album';
+                this.orientation = "album";
             }else{
-                this.orientation = 'portrait';
+                this.orientation = "portrait";
             }
         },
 
@@ -426,7 +447,7 @@ let VueApp = {
         },
         // Методы для маленького режима -----------------------
         smallModeCheckButtonsVisibility: function (name) {
-            return this.blocks.small.inactive.indexOf(name) !== -1;
+            return this.blocksState.small.inactive.indexOf(name) !== -1;
         },
         smallModeSwitchTopBlock: function (block) {
             this.smallModeSwitchBlock("top", block);
@@ -435,44 +456,50 @@ let VueApp = {
             this.smallModeSwitchBlock("bottom", block);
         },
         smallModeSwitchBlock: function (position, block) {
-            let prevBlock = this.blocks.small.active[position];
-            let index = this.blocks.small.inactive.indexOf(block);
-            this.$set(this.blocks.small.active, position, block);
-            this.$set(this.blocks.small.inactive, index, prevBlock);
+            let prevBlock = this.blocksState.small.active[position];
+            let index = this.blocksState.small.inactive.indexOf(block);
+            this.$set(this.blocksState.small.active, position, block);
+            this.$set(this.blocksState.small.inactive, index, prevBlock);
             this[prevBlock].isVisible = false;
             this[block].isVisible = true;
             this.setBlocksState();
         },
         smallModeBlockIsTop: function (block) {
-            return this.blocks.small.active.top === block;
+            return this.blocksState.small.active.top === block;
         },
         smallModeBlockIsBottom: function (block) {
-            return this.blocks.small.active.bottom === block;
+            return this.blocksState.small.active.bottom === block;
+        },
+        smallModeSwitchTopPresentationBlock: function(){
+            this.smallModeSwitchBlock("top", this.BLOCKS.CHAT);
         },
         // ------------------------------------------------------
-        setBlockInactive: function(block){
-            if(this.blocks[this.currentMode].inactive.indexOf(block) === -1){
-                this.blocks[this.currentMode].inactive.push(block);
+        setBlockInactive: function(block, mode = this.currentMode){
+            if(this.blocksState[mode].inactive.indexOf(block) === -1){
+                this.blocksState[mode].inactive.push(block);
             }
+        },
+        setBlockActive: function(block, mode = this.currentMode){
+                let pos = this.blocksState[mode].inactive.indexOf(block);
+                this.blocksState[mode].inactive.splice(pos, 1);
         },
 
         getBlocksState: function (mode) {
-            let blocks = localStorage.getItem("blocksState");
-            if (blocks) {
-                blocks = JSON.parse(blocks);
-                this.blocks = blocks;
+            let blocksState = localStorage.getItem("blocksState");
+            if (blocksState) {
+                this.blocksState = JSON.parse(blocksState);
             }
             this.setModeState(mode);
         },
         setModeState: function (mode) {
             switch (mode) {
-                case "small":
+                case this.MODES.SMALL:
                     this.setSmallMode();
                     break;
-                case "medium":
+                case this.MODES.MEDIUM:
                     this.setMediumMode();
                     break;
-                case "large":
+                case this.MODES.LARGE:
                     this.setLargeMode();
                     break;
                 default:
@@ -481,34 +508,32 @@ let VueApp = {
         },
 
         setSmallMode: function () {
-            this[this.blocks.small.active.top].isVisible = true;
-            this[this.blocks.small.active.bottom].isVisible = true;
-            this[this.blocks.small.inactive[0]].isVisible = false;
-            this[this.blocks.small.inactive[1]].isVisible = false;
+            this[this.blocksState.small.active.top].isVisible = true;
+            this[this.blocksState.small.active.bottom].isVisible = true;
+            this[this.blocksState.small.inactive[0]].isVisible = false;
+            this[this.blocksState.small.inactive[1]].isVisible = false;
         },
         setMediumMode: function () {
-            this.room.mainElement = this.blocks.medium.main;
-            this[this.room.mainElement].isVisible = true;
-            if (this.blocks.medium.inactive.length > 0) {
-                for (const block of this.blocks.medium.inactive) {
+            this.room.mainElement = this.blocksState.medium.main;
+            this.setAllBlocksVisible();
+            if (this.blocksState.medium.inactive.length > 0) {
+                for (const block of this.blocksState.medium.inactive) {
                     this[block].isVisible = false;
                 }
             }
         },
         setLargeMode: function () {
-            this.room.mainElement = this.blocks.large.main;
-            this[this.room.mainElement].isVisible = true;
-            if (this.blocks.large.inactive.length > 0) {
-                for (const block of this.blocks.large.inactive) {
+            this.room.mainElement = this.blocksState.large.main;
+            this.setAllBlocksVisible();
+            if (this.blocksState.large.inactive.length > 0) {
+                for (const block of this.blocksState.large.inactive) {
                     this[block].isVisible = false;
                 }
-            } else {
-                this.setAllBlocksVisible();
             }
         },
 
         setBlocksState: function () {
-            localStorage.setItem("blocksState", JSON.stringify(this.blocks));
+            localStorage.setItem("blocksState", JSON.stringify(this.blocksState));
         },
         setAllBlocksVisible: function () {
             this.video.isVisible = true;
